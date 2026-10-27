@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://lx735mdyjf0u"]
+
+[ext_resource type="Script" uid="uid://bkeo6c5msu2ew" path="res://scripts/attack_range_test.gd" id="1_b6cjm"]
+
+[node name="AttackRangeTest" type="Node2D" unique_id=1338479314]
+script = ExtResource("1_b6cjm")
