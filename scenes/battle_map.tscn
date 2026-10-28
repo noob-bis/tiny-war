@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://dejiyr1o50ngx" path="res://Tiny_War_Assets/Buildings/Red Buildings/Tower.png" id="4_admde"]
 [ext_resource type="Texture2D" uid="uid://c3bl6x8u1u7rn" path="res://Tiny_War_Assets/Terrain/Resources/Wood/Trees/Tree1.png" id="5_admde"]
 [ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://Tiny_War_Assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
+[ext_resource type="Script" uid="uid://dpdo6o4mbv2ra" path="res://scripts/unit_movement.gd" id="7_hpw63"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7eff0"]
 texture = ExtResource("1_ijbqd")
@@ -224,3 +225,6 @@ offset_top = 294.0
 offset_right = 1057.0
 offset_bottom = 422.0
 texture = SubResource("AtlasTexture_tdoib")
+
+[node name="UnitMovement" type="Node2D" parent="." unique_id=258567489]
+script = ExtResource("7_hpw63")
