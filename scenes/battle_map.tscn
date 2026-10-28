@@ -82,15 +82,15 @@ script = ExtResource("2_7eff0")
 [node name="BlueBase" type="Node2D" parent="." unique_id=1442114151]
 
 [node name="Castle" type="Sprite2D" parent="BlueBase" unique_id=507637737]
-position = Vector2(92, 110.53125)
-scale = Vector2(1.3757812, 1.1442871)
+position = Vector2(113, 93)
+scale = Vector2(1.2113281, 1.1442871)
 texture = ExtResource("3_qd8ff")
 
 [node name="RedBase" type="Node2D" parent="." unique_id=1670148234]
 
 [node name="Sprite2D" type="Sprite2D" parent="RedBase" unique_id=804309082]
-position = Vector2(1059.25, 465)
-scale = Vector2(1.4492189, 1.1328124)
+position = Vector2(1040, 443.00003)
+scale = Vector2(1.2617191, 1.1328124)
 texture = ExtResource("4_admde")
 
 [node name="Decoration" type="Node2D" parent="." unique_id=838903480]
@@ -98,7 +98,7 @@ texture = ExtResource("4_admde")
 [node name="TextureRect" type="TextureRect" parent="Decoration" unique_id=589966139]
 offset_left = -80.0
 offset_top = 108.0
-offset_right = 81.0
+offset_right = 82.0
 offset_bottom = 336.0
 texture = SubResource("AtlasTexture_xt50i")
 
