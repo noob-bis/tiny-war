@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="Tiny-War"
-run/main_scene="uid://bifoxcvc3gxy3"
+run/main_scene="uid://wmfnb0v84ovg"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+UnitData="*uid://cit83cmfrlxk"
 
 [display]
 

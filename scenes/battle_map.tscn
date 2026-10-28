@@ -1,11 +1,12 @@
 [gd_scene format=4 uid="uid://dtgipps2hgn6d"]
 
-[ext_resource type="Texture2D" uid="uid://bhbtb0wgbav84" path="res://Tiny_War_Assets/Terrain/Tileset/Tilemap_color3.png" id="1_ijbqd"]
+[ext_resource type="Texture2D" uid="uid://bhbtb0wgbav84" path="res://assets/Terrain/Tileset/Tilemap_color3.png" id="1_ijbqd"]
 [ext_resource type="Script" uid="uid://fyx8lhryhvmx" path="res://scripts/battle_grid.gd" id="2_7eff0"]
-[ext_resource type="Texture2D" uid="uid://cyrn3g2s4i3fa" path="res://Tiny_War_Assets/Buildings/Black Buildings/Tower.png" id="3_qd8ff"]
-[ext_resource type="Texture2D" uid="uid://dejiyr1o50ngx" path="res://Tiny_War_Assets/Buildings/Red Buildings/Tower.png" id="4_admde"]
-[ext_resource type="Texture2D" uid="uid://c3bl6x8u1u7rn" path="res://Tiny_War_Assets/Terrain/Resources/Wood/Trees/Tree1.png" id="5_admde"]
-[ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://Tiny_War_Assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
+[ext_resource type="Texture2D" uid="uid://cyrn3g2s4i3fa" path="res://assets/Buildings/Black Buildings/Tower.png" id="3_qd8ff"]
+[ext_resource type="Texture2D" uid="uid://dejiyr1o50ngx" path="res://assets/Buildings/Red Buildings/Tower.png" id="4_admde"]
+[ext_resource type="Texture2D" uid="uid://c3bl6x8u1u7rn" path="res://assets/Terrain/Resources/Wood/Trees/Tree1.png" id="5_admde"]
+[ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
+[ext_resource type="Script" uid="uid://dpdo6o4mbv2ra" path="res://scripts/unit_movement.gd" id="7_hpw63"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7eff0"]
 texture = ExtResource("1_ijbqd")
@@ -81,15 +82,15 @@ script = ExtResource("2_7eff0")
 [node name="BlueBase" type="Node2D" parent="." unique_id=1442114151]
 
 [node name="Castle" type="Sprite2D" parent="BlueBase" unique_id=507637737]
-position = Vector2(92, 110.53125)
-scale = Vector2(1.3757812, 1.1442871)
+position = Vector2(113, 93)
+scale = Vector2(1.2113281, 1.1442871)
 texture = ExtResource("3_qd8ff")
 
 [node name="RedBase" type="Node2D" parent="." unique_id=1670148234]
 
 [node name="Sprite2D" type="Sprite2D" parent="RedBase" unique_id=804309082]
-position = Vector2(1059.25, 465)
-scale = Vector2(1.4492189, 1.1328124)
+position = Vector2(1040, 443.00003)
+scale = Vector2(1.2617191, 1.1328124)
 texture = ExtResource("4_admde")
 
 [node name="Decoration" type="Node2D" parent="." unique_id=838903480]
@@ -97,7 +98,7 @@ texture = ExtResource("4_admde")
 [node name="TextureRect" type="TextureRect" parent="Decoration" unique_id=589966139]
 offset_left = -80.0
 offset_top = 108.0
-offset_right = 81.0
+offset_right = 82.0
 offset_bottom = 336.0
 texture = SubResource("AtlasTexture_xt50i")
 
@@ -224,3 +225,6 @@ offset_top = 294.0
 offset_right = 1057.0
 offset_bottom = 422.0
 texture = SubResource("AtlasTexture_tdoib")
+
+[node name="UnitMovement" type="Node2D" parent="." unique_id=258567489]
+script = ExtResource("7_hpw63")
