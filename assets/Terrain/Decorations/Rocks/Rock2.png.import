@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d01n5xrk7gukb"
-path="res://.godot/imported/Rock2.png-0caea04b2d89b6b11160805fb04652ee.ctex"
+path="res://.godot/imported/Rock2.png-3f8d8d4af66becd1fb83f74ff0566a37.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/Terrain/Decorations/Rocks/Rock2.png"
-dest_files=["res://.godot/imported/Rock2.png-0caea04b2d89b6b11160805fb04652ee.ctex"]
+dest_files=["res://.godot/imported/Rock2.png-3f8d8d4af66becd1fb83f74ff0566a37.ctex"]
 
 [params]
 
