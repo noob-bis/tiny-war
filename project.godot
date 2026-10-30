@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 UnitData="*uid://cit83cmfrlxk"
 GridUtils="*uid://clkhjs23dcr2n"
+TurnManager="*uid://c1i5s22kjmbrt"
 
 [display]
 
