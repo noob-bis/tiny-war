@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bftyud0cridsv"]
+
+[ext_resource type="Script" uid="uid://dkyikx4u4k5a6" path="res://scripts/turn_counter_test.gd" id="1_2ui5u"]
+
+[node name="TurnCounterTest" type="Node2D" unique_id=1002568063]
+script = ExtResource("1_2ui5u")
