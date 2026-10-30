@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://crrh2yo7wd20k"]
+
+[ext_resource type="Script" uid="uid://bkkx74yjnhpcl" path="res://scripts/base_destroy_test.gd" id="1_pvvq1"]
+
+[node name="base_test" type="Node2D" unique_id=1074429729]
+script = ExtResource("1_pvvq1")
