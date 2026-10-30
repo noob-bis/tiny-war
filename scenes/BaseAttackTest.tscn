@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://belt540oa0cbj"]
+
+[ext_resource type="Script" uid="uid://bcl65e7na6xww" path="res://scripts/base_attack_test.gd" id="1_fyw1b"]
+
+[node name="BaseAttackTest" type="Node2D" unique_id=798619012]
+script = ExtResource("1_fyw1b")
