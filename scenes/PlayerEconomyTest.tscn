@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://ckdfn1porei0x"]
+
+[ext_resource type="Script" uid="uid://cvl5n0l1hly10" path="res://scripts/player_economy_test.gd" id="1_b31t6"]
+
+[node name="PlayerEconomyTest" type="Node2D" unique_id=1743866375]
+script = ExtResource("1_b31t6")
