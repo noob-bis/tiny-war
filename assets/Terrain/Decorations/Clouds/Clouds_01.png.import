@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bt2j72rseokun"
-path="res://.godot/imported/Clouds_01.png-534dfbbd1bb7f05b634ce83a248e55fa.ctex"
+path="res://.godot/imported/Clouds_01.png-686b6608a3b438fb3a08f68980130450.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/Terrain/Decorations/Clouds/Clouds_01.png"
-dest_files=["res://.godot/imported/Clouds_01.png-534dfbbd1bb7f05b634ce83a248e55fa.ctex"]
+dest_files=["res://.godot/imported/Clouds_01.png-686b6608a3b438fb3a08f68980130450.ctex"]
 
 [params]
 

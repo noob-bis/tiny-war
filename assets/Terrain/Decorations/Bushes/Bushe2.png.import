@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dofry01tqauv1"
-path="res://.godot/imported/Bushe2.png-83e534c815911f5a268b2b132316df9e.ctex"
+path="res://.godot/imported/Bushe2.png-3cc4b66b5c613a610e2fdd37b93f0ec9.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/Terrain/Decorations/Bushes/Bushe2.png"
-dest_files=["res://.godot/imported/Bushe2.png-83e534c815911f5a268b2b132316df9e.ctex"]
+dest_files=["res://.godot/imported/Bushe2.png-3cc4b66b5c613a610e2fdd37b93f0ec9.ctex"]
 
 [params]
 

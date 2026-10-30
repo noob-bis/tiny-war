@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c51b6hbs00bke"
-path="res://.godot/imported/Sheep_Move.png-03101c187d5b3564de9701cb3c54d872.ctex"
+path="res://.godot/imported/Sheep_Move.png-67188333c3912791da7208842800c96d.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png"
-dest_files=["res://.godot/imported/Sheep_Move.png-03101c187d5b3564de9701cb3c54d872.ctex"]
+dest_files=["res://.godot/imported/Sheep_Move.png-67188333c3912791da7208842800c96d.ctex"]
 
 [params]
 
