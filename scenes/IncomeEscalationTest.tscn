@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b2kjdb0qh53ks"]
+
+[ext_resource type="Script" uid="uid://da6bt6w0ksbfj" path="res://scripts/income_escalation_test.gd" id="1_hkmlm"]
+
+[node name="IncomeEscalationTest" type="Node2D" unique_id=1752119986]
+script = ExtResource("1_hkmlm")
