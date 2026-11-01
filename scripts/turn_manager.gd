@@ -64,10 +64,3 @@ func advance_phase():
 # Print the current player and phase.
 func print_status():
 	print("Player ", current_player, " - ", get_current_phase())
-
-# Temporary test.
-func _ready():
-	start_match(1)
-
-	for i in range(10):
-		advance_phase()
