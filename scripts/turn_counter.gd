@@ -1,8 +1,5 @@
 extends Node
 
-# Tiny War - Turn Counter
-# Task 2.1.1.4
-
 # Maximum number of turns in a match.
 const MAX_TURNS = 40
 

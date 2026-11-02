@@ -2,11 +2,15 @@
 
 [ext_resource type="Texture2D" uid="uid://bhbtb0wgbav84" path="res://assets/Terrain/Tileset/Tilemap_color3.png" id="1_ijbqd"]
 [ext_resource type="Script" uid="uid://fyx8lhryhvmx" path="res://scripts/battle_grid.gd" id="2_7eff0"]
+[ext_resource type="Script" uid="uid://ck4c1irgocv58" path="res://scripts/base_destroy.gd" id="3_jx2v5"]
 [ext_resource type="Texture2D" uid="uid://cyrn3g2s4i3fa" path="res://assets/Buildings/Black Buildings/Tower.png" id="3_qd8ff"]
 [ext_resource type="Texture2D" uid="uid://dejiyr1o50ngx" path="res://assets/Buildings/Red Buildings/Tower.png" id="4_admde"]
 [ext_resource type="Texture2D" uid="uid://c3bl6x8u1u7rn" path="res://assets/Terrain/Resources/Wood/Trees/Tree1.png" id="5_admde"]
 [ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
-[ext_resource type="Script" path="res://scripts/unit_movement.gd" id="7_hpw63"]
+[ext_resource type="Script" uid="uid://duncda31sr452" path="res://scripts/mouse_input.gd" id="8_0xsog"]
+[ext_resource type="Script" uid="uid://raguym0b6mv3" path="res://scripts/player_economy.gd" id="9_jx2v5"]
+[ext_resource type="Script" uid="uid://b4bah1a1qhrfi" path="res://scripts/turn_counter.gd" id="10_qru5d"]
+[ext_resource type="Script" uid="uid://bsrjfrllif2n2" path="res://scripts/game_flow.gd" id="12_qru5d"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7eff0"]
 texture = ExtResource("1_ijbqd")
@@ -68,18 +72,51 @@ region = Rect2(596.19495, 27.2, 161.17407, 228.8)
 atlas = ExtResource("6_v42vf")
 region = Rect2(384, 0, 128, 128)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a37hb"]
+bg_color = Color(0.12553534, 0.12553534, 0.12553528, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l0g82"]
+bg_color = Color(0.15402365, 0.15402365, 0.15402359, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jx2v5"]
+bg_color = Color(0.15402365, 0.15402365, 0.15402359, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qru5d"]
+bg_color = Color(0.1488724, 0.14887244, 0.14887235, 1)
+
 [node name="BattleMap" type="Node2D" unique_id=1871358076]
+position = Vector2(85, 129)
 
 [node name="Ground" type="TileMapLayer" parent="." unique_id=406509469]
 tile_map_data = PackedByteArray("AAAAAAgAAAAAAAIAAAAAAAkAAAAFAAQAAAABAAgAAAAGAAIAAAABAAkAAAAGAAQAAAAAAAcAAAAAAAEAAAAQAAgAAAAGAAIAAAAQAAkAAAAGAAQAAAARAAgAAAACAAIAAAARAAkAAAAHAAQAAAACAAgAAAAGAAIAAAACAAkAAAAGAAQAAAADAAgAAAAGAAIAAAADAAkAAAAGAAQAAAAEAAgAAAAGAAIAAAAEAAkAAAAGAAQAAAAGAAgAAAAGAAIAAAAGAAkAAAAGAAQAAAAFAAgAAAAGAAIAAAAFAAkAAAAGAAQAAAAHAAgAAAAGAAIAAAAHAAkAAAAGAAQAAAAIAAgAAAAGAAIAAAAIAAkAAAAGAAQAAAAJAAgAAAAGAAIAAAAJAAkAAAAGAAQAAAAKAAgAAAAGAAIAAAAKAAkAAAAGAAQAAAALAAgAAAAGAAIAAAALAAkAAAAGAAQAAAAMAAgAAAAGAAIAAAAMAAkAAAAGAAQAAAANAAgAAAAGAAIAAAANAAkAAAAGAAQAAAAOAAgAAAAGAAIAAAAOAAkAAAAGAAQAAAAPAAgAAAAGAAIAAAAPAAkAAAAGAAQAAAAAAAUAAAAAAAEAAAAAAAYAAAAAAAEAAAAAAAIAAAAAAAEAAAAAAAMAAAAAAAEAAAAAAAQAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAEAAAABAAAAAAABAAAAAAACAAAAAAABAAAAAAAQAAAAAAABAAAAAAARAAAAAAACAAAAAAADAAAAAAABAAAAAAAFAAAAAAABAAAAAAAEAAAAAAABAAAAAAAGAAAAAAABAAAAAAAHAAAAAAABAAAAAAAJAAAAAAABAAAAAAAIAAAAAAABAAAAAAAKAAAAAAABAAAAAAALAAAAAAABAAAAAAAMAAAAAAABAAAAAAANAAAAAAABAAAAAAAOAAAAAAABAAAAAAAPAAAAAAABAAAAAAARAAEAAAACAAEAAAARAAIAAAACAAEAAAARAAMAAAACAAEAAAARAAQAAAACAAEAAAARAAUAAAACAAEAAAARAAYAAAACAAEAAAARAAcAAAACAAEAAAABAAEAAAABAAEAAAABAAIAAAABAAEAAAABAAMAAAABAAEAAAABAAQAAAABAAEAAAABAAUAAAABAAEAAAABAAYAAAABAAEAAAABAAcAAAABAAEAAAAGAAcAAAABAAEAAAAHAAcAAAABAAEAAAAIAAcAAAABAAEAAAAJAAcAAAABAAEAAAAKAAcAAAABAAEAAAALAAcAAAABAAEAAAAMAAcAAAABAAEAAAANAAcAAAABAAEAAAAOAAcAAAABAAEAAAAPAAcAAAABAAEAAAAQAAcAAAABAAEAAAAQAAYAAAABAAEAAAAQAAUAAAABAAEAAAAQAAQAAAABAAEAAAAQAAMAAAABAAEAAAAQAAIAAAABAAEAAAAQAAEAAAABAAEAAAAPAAEAAAABAAEAAAAOAAEAAAABAAEAAAANAAEAAAABAAEAAAAMAAEAAAABAAEAAAALAAEAAAABAAEAAAAKAAEAAAABAAEAAAAJAAEAAAABAAEAAAAIAAEAAAABAAEAAAAHAAEAAAABAAEAAAAGAAEAAAABAAEAAAAFAAEAAAABAAEAAAAEAAEAAAABAAEAAAADAAEAAAABAAEAAAACAAEAAAABAAEAAAACAAIAAAABAAEAAAACAAMAAAABAAEAAAACAAQAAAABAAEAAAACAAUAAAABAAEAAAACAAYAAAABAAEAAAACAAcAAAABAAEAAAADAAcAAAABAAEAAAAPAAIAAAABAAEAAAAPAAMAAAABAAEAAAAPAAQAAAABAAEAAAAPAAUAAAABAAEAAAAPAAYAAAABAAEAAAAOAAYAAAABAAEAAAAEAAcAAAABAAEAAAAFAAcAAAABAAEAAAAJAAYAAAABAAEAAAAKAAYAAAABAAEAAAALAAYAAAABAAEAAAAMAAYAAAABAAEAAAANAAYAAAABAAEAAAAIAAYAAAABAAEAAAAHAAYAAAABAAEAAAAGAAYAAAABAAEAAAAFAAYAAAABAAEAAAAEAAYAAAABAAEAAAADAAYAAAABAAEAAAADAAUAAAABAAEAAAADAAQAAAABAAEAAAADAAMAAAABAAEAAAADAAIAAAABAAEAAAAEAAIAAAABAAEAAAAEAAMAAAABAAEAAAAEAAQAAAABAAEAAAAEAAUAAAABAAEAAAAFAAUAAAABAAEAAAAFAAQAAAABAAEAAAAFAAMAAAABAAEAAAAFAAIAAAABAAEAAAAGAAIAAAABAAEAAAAGAAMAAAABAAEAAAAGAAQAAAABAAEAAAAGAAUAAAABAAEAAAAHAAUAAAABAAEAAAAHAAQAAAABAAEAAAAHAAMAAAABAAEAAAAHAAIAAAABAAEAAAAIAAIAAAABAAEAAAAIAAMAAAABAAEAAAAIAAQAAAABAAEAAAAIAAUAAAABAAEAAAAJAAIAAAABAAEAAAAJAAMAAAABAAEAAAAJAAQAAAABAAEAAAAJAAUAAAABAAEAAAAKAAUAAAABAAEAAAAKAAQAAAABAAEAAAAKAAMAAAABAAEAAAAKAAIAAAABAAEAAAALAAIAAAABAAEAAAALAAMAAAABAAEAAAALAAQAAAABAAEAAAALAAUAAAABAAEAAAAMAAUAAAABAAEAAAAMAAQAAAABAAEAAAAMAAMAAAABAAEAAAAMAAIAAAABAAEAAAANAAIAAAABAAEAAAANAAMAAAABAAEAAAANAAQAAAABAAEAAAANAAUAAAABAAEAAAAOAAUAAAABAAEAAAAOAAQAAAABAAEAAAAOAAMAAAABAAEAAAAOAAIAAAABAAEAAAA=")
 tile_set = SubResource("TileSet_xt50i")
 
 [node name="BattleGrid" type="Node2D" parent="." unique_id=340844221]
-z_index = 5
 position = Vector2(192, 32)
 script = ExtResource("2_7eff0")
 
 [node name="BlueBase" type="Node2D" parent="." unique_id=1442114151]
+script = ExtResource("3_jx2v5")
 
 [node name="Castle" type="Sprite2D" parent="BlueBase" unique_id=507637737]
 position = Vector2(113, 93)
@@ -87,6 +124,8 @@ scale = Vector2(1.2113281, 1.1442871)
 texture = ExtResource("3_qd8ff")
 
 [node name="RedBase" type="Node2D" parent="." unique_id=1670148234]
+script = ExtResource("3_jx2v5")
+player_id = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="RedBase" unique_id=804309082]
 position = Vector2(1040, 443.00003)
@@ -101,12 +140,14 @@ offset_top = 108.0
 offset_right = 82.0
 offset_bottom = 336.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect2" type="TextureRect" parent="Decoration" unique_id=199129095]
 offset_top = 161.0
 offset_right = 161.0
 offset_bottom = 389.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect11" type="TextureRect" parent="Decoration" unique_id=461166883]
 offset_left = 81.0
@@ -114,6 +155,7 @@ offset_top = 130.0
 offset_right = 242.0
 offset_bottom = 358.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect12" type="TextureRect" parent="Decoration" unique_id=196853437]
 offset_left = -52.0
@@ -121,6 +163,7 @@ offset_top = 228.0
 offset_right = 109.0
 offset_bottom = 456.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect13" type="TextureRect" parent="Decoration" unique_id=177663468]
 offset_left = 23.0
@@ -128,6 +171,7 @@ offset_top = 257.0
 offset_right = 184.0
 offset_bottom = 485.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect14" type="TextureRect" parent="Decoration" unique_id=926616296]
 offset_left = 81.0
@@ -135,6 +179,7 @@ offset_top = 276.0
 offset_right = 242.0
 offset_bottom = 504.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect15" type="TextureRect" parent="Decoration" unique_id=190413127]
 offset_left = -33.0
@@ -142,6 +187,7 @@ offset_top = 358.0
 offset_right = 128.0
 offset_bottom = 586.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect16" type="TextureRect" parent="Decoration" unique_id=1223124456]
 offset_left = 48.0
@@ -149,6 +195,7 @@ offset_top = 358.0
 offset_right = 209.0
 offset_bottom = 586.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect3" type="TextureRect" parent="Decoration" unique_id=211793283]
 offset_left = 1025.0
@@ -156,6 +203,7 @@ offset_top = -36.0
 offset_right = 1186.0
 offset_bottom = 192.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect4" type="TextureRect" parent="Decoration" unique_id=623126592]
 offset_left = 949.0
@@ -163,12 +211,14 @@ offset_top = -36.0
 offset_right = 1110.0
 offset_bottom = 192.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect5" type="TextureRect" parent="Decoration" unique_id=2041443451]
 offset_left = 997.0
 offset_right = 1158.0
 offset_bottom = 228.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect6" type="TextureRect" parent="Decoration" unique_id=1761850249]
 offset_left = 1025.0
@@ -176,6 +226,7 @@ offset_top = 86.0
 offset_right = 1186.0
 offset_bottom = 314.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect7" type="TextureRect" parent="Decoration" unique_id=1350559641]
 offset_left = 949.0
@@ -183,6 +234,7 @@ offset_top = 66.0
 offset_right = 1110.0
 offset_bottom = 294.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect8" type="TextureRect" parent="Decoration" unique_id=1986918616]
 offset_left = 929.0
@@ -190,6 +242,7 @@ offset_top = 130.0
 offset_right = 1090.0
 offset_bottom = 358.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect9" type="TextureRect" parent="Decoration" unique_id=193138273]
 offset_left = 997.0
@@ -197,6 +250,7 @@ offset_top = 161.0
 offset_right = 1158.0
 offset_bottom = 389.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="TextureRect10" type="TextureRect" parent="Decoration" unique_id=1744783906]
 offset_left = 1064.0
@@ -204,6 +258,7 @@ offset_top = 192.0
 offset_right = 1225.0
 offset_bottom = 420.0
 texture = SubResource("AtlasTexture_xt50i")
+metadata/_edit_use_anchors_ = true
 
 [node name="Sheep" type="TextureRect" parent="Decoration" unique_id=1921179473]
 offset_left = 904.0
@@ -211,6 +266,7 @@ offset_top = 485.0
 offset_right = 1032.0
 offset_bottom = 613.0
 texture = SubResource("AtlasTexture_tdoib")
+metadata/_edit_use_anchors_ = true
 
 [node name="Sheep2" type="TextureRect" parent="Decoration" unique_id=988729259]
 offset_left = 48.0
@@ -218,6 +274,7 @@ offset_top = 161.0
 offset_right = 176.0
 offset_bottom = 289.0
 texture = SubResource("AtlasTexture_tdoib")
+metadata/_edit_use_anchors_ = true
 
 [node name="Sheep3" type="TextureRect" parent="Decoration" unique_id=1357148736]
 offset_left = 929.0
@@ -225,6 +282,64 @@ offset_top = 294.0
 offset_right = 1057.0
 offset_bottom = 422.0
 texture = SubResource("AtlasTexture_tdoib")
+metadata/_edit_use_anchors_ = true
 
-[node name="UnitMovement" type="Node2D" parent="." unique_id=258567489]
-script = ExtResource("7_hpw63")
+[node name="MouseInput" type="Node2D" parent="." unique_id=855416727]
+script = ExtResource("8_0xsog")
+
+[node name="PlayerEconomy" type="Node" parent="." unique_id=1237486562]
+script = ExtResource("9_jx2v5")
+
+[node name="TurnCounter" type="Node" parent="." unique_id=1146314960]
+script = ExtResource("10_qru5d")
+
+[node name="GameFlow" type="Node2D" parent="." unique_id=1559712816]
+script = ExtResource("12_qru5d")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2023630667]
+
+[node name="EndturnButton" type="Button" parent="CanvasLayer" unique_id=1908158298]
+anchors_preset = -1
+offset_left = 616.0
+offset_top = 62.0
+offset_right = 722.0
+offset_bottom = 126.0
+text = "End Turn"
+metadata/_edit_use_anchors_ = true
+
+[node name="WinnerLabel" type="Label" parent="CanvasLayer" unique_id=854613105]
+visible = false
+offset_left = 457.0
+offset_top = 300.0
+offset_right = 864.0
+offset_bottom = 491.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_a37hb")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Player1HUD" type="Label" parent="CanvasLayer" unique_id=1305741630]
+offset_left = 293.0
+offset_top = 7.0
+offset_right = 501.0
+offset_bottom = 111.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_l0g82")
+
+[node name="Player2HUD" type="Label" parent="CanvasLayer" unique_id=1301891929]
+offset_left = 833.0
+offset_top = 5.0
+offset_right = 1047.0
+offset_bottom = 111.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_jx2v5")
+
+[node name="Phase" type="Label" parent="CanvasLayer" unique_id=2094367743]
+offset_left = 563.0
+offset_right = 771.0
+offset_bottom = 49.0
+theme_override_font_sizes/font_size = 25
+theme_override_styles/normal = SubResource("StyleBoxFlat_qru5d")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="CanvasLayer/EndturnButton" to="GameFlow" method="end_turn"]

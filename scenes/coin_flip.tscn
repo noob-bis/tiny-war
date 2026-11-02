@@ -6,5 +6,7 @@
 script = ExtResource("1_ip0qb")
 
 [node name="ResultLabel" type="Label" parent="." unique_id=1268440126]
-offset_right = 40.0
-offset_bottom = 23.0
+offset_left = 471.0
+offset_top = 334.0
+offset_right = 918.0
+offset_bottom = 409.0

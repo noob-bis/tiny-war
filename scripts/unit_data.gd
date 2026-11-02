@@ -9,15 +9,3 @@ const UNIT_STATS = {
 # to get units data
 func get_stats(unit_type: String) -> Dictionary:
 	return UNIT_STATS.get(unit_type, {}) # get() will look up unit_type, it nothing match, it return {} ~ empty Dic as fallback (because our return type is a Dictionary)
-
-func _ready() -> void:
-	print("""
-	+------------------------+
-	|	Test load unit data  |
-	+------------------------+
-	Melee: %s
-	Dragon: %s
-	+------------------------+
-	Unit data loaded
-	+------------------------+
-		""" % [get_stats("melee"), get_stats("dragon")])

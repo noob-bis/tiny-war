@@ -8,8 +8,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var pos = get_local_mouse_position()
 		var cell = Vector2i(pos.x / GridUtils.TILE_SIZE, pos.y / GridUtils.TILE_SIZE)
-		if GridUtils.is_cell_inside(cell):
-			print(cell)
+		#if GridUtils.is_cell_inside(cell):
+			#print(cell)
 
 func _draw() -> void:
 	# vertical lines
