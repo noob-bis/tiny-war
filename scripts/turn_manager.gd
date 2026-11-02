@@ -1,4 +1,3 @@
-
 extends Node
 
 # Signals to notify other scripts.
@@ -44,10 +43,10 @@ func advance_phase():
 		return
 
 	if current_phase_index == 4:
-		# Return to Income.
+		# Return to Income
 		current_phase_index = 0
 
-		# Switch players.
+		# Switch players
 		if current_player == 1:
 			current_player = 2
 		else:
@@ -57,8 +56,8 @@ func advance_phase():
 	else:
 		current_phase_index += 1
 
-	phase_changed.emit(current_player, get_current_phase())
 	print_status()
+	phase_changed.emit(current_player, get_current_phase())
 
 
 # Print the current player and phase.

@@ -1,8 +1,5 @@
 extends Node
 
-# Tiny War - Base Attack
-# Task 2.1.3.2
-
 # Each base deals 10 damage to adjacent enemy units.
 const BASE_DAMAGE = 10
 
@@ -15,18 +12,18 @@ func is_adjacent(
 	unit_position: Vector2i
 ) -> bool:
 
-	# Make sure the base is inside the battlefield.
+	# Make sure the base is inside the battlefield
 	if not GridUtils.is_cell_inside(base_position):
 		return false
 
-	# Make sure the unit is inside the battlefield.
+	# Make sure the unit is inside the battlefield
 	if not GridUtils.is_cell_inside(unit_position):
 		return false
 
-	# Calculate how far apart the two positions are.
+	# Calculate how far apart the two positions are
 	var difference = unit_position - base_position
 
-	# Check the four directions around the base.
+	# Check the four directions around the base
 	if difference == Vector2i(1, 0):
 		return true  # Right
 
@@ -44,7 +41,6 @@ func is_adjacent(
 
 
 # Calculate the damage dealt by a base.
-#
 # base_position = position of the base
 # unit_position = position of the unit
 # is_enemy = whether the unit belongs to the opposing player

@@ -1,8 +1,5 @@
 extends Node
 
-# Tiny War - Movement Range
-# Task 2.1.4.4
-
 # Our battlefield has 12 columns and 8 rows.
 const COLUMNS = 12
 const ROWS = 8
@@ -19,13 +16,13 @@ const TANK_MOVE = 1
 # Find out how far a unit is allowed to move.
 func get_movement_range(unit_type: String) -> int:
 
-	if unit_type == "Melee":
+	if unit_type == "melee":
 		return MELEE_MOVE
 
-	elif unit_type == "Ranged":
+	elif unit_type == "ranged":
 		return RANGED_MOVE
 
-	elif unit_type == "Tank":
+	elif unit_type == "tank":
 		return TANK_MOVE
 
 	# If the unit type isn't recognized, return 0.
@@ -47,7 +44,6 @@ func is_inside_grid(tile: Vector2i) -> bool:
 
 
 # Check whether a unit can move to another tile.
-#
 # start = the unit's current tile
 # target = the tile the player clicked
 # unit_type = Melee, Ranged, or Tank

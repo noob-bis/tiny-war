@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3b4bfbu7y1hk"
-path="res://.godot/imported/Archer_Run.png-3443b6c382a791e8508533a8e20261ac.ctex"
+uid="uid://blmcnh4hu0sqh"
+path="res://.godot/imported/Monk.png-de70b9d8ff8260d4141f99aba83e8933.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/Units/Blue Units/Archer/Archer_Run.png"
-dest_files=["res://.godot/imported/Archer_Run.png-3443b6c382a791e8508533a8e20261ac.ctex"]
+source_file="res://assets/Units/Blue/Monk/Monk.png"
+dest_files=["res://.godot/imported/Monk.png-de70b9d8ff8260d4141f99aba83e8933.ctex"]
 
 [params]
 

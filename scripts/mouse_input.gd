@@ -4,11 +4,15 @@ extends Node2D
 
 # Signals to communicate with other scripts.
 signal place_unit(tile)
+signal move_unit(tile)
 signal attack_unit(tile)
 
 # The game board has 12 columns and 8 rows.
 var tile_size = 64
 
+func _ready() -> void:
+	var grid = get_parent().get_node("BattleGrid")
+	position = grid.position
 
 # Detects mouse clicks.
 func _input(event):
@@ -27,7 +31,7 @@ func _input(event):
 
 			# Stop if the click is outside the board.
 			if x < 0 or x >= 12 or y < 0 or y >= 8:
-				print("Outside the grid!")
+				#print("Outside the grid!")
 				return
 
 			# Save the clicked tile.
@@ -40,6 +44,11 @@ func _input(event):
 			if phase == "Deploy":
 				print("Place unit at: ", tile)
 				place_unit.emit(tile)
+				
+			# Move phase: Move a unit
+			if phase == "Move":
+				print("Move unit to: ", tile)
+				move_unit.emit(tile)
 
 			# Act phase: choose where to attack.
 			elif phase == "Act":

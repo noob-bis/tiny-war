@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b3ru0wdr3mntw" path="res://scripts/main_menu.gd" id="1_1l2iv"]
 [ext_resource type="Texture2D" uid="uid://bhbtb0wgbav84" path="res://assets/Terrain/Tileset/Tilemap_color3.png" id="2_qoj47"]
 [ext_resource type="Texture2D" uid="uid://djta272qxnj56" path="res://assets/UI Elements/UI Elements/Ribbons/BigRibbons.png" id="3_tq18k"]
-[ext_resource type="FontFile" uid="uid://bbpv5bsw0dfqm" path="res://Font/MedievalSharp-Regular.ttf" id="4_1sb1x"]
+[ext_resource type="FontFile" uid="uid://bbpv5bsw0dfqm" path="res://assets/Font/MedievalSharp-Regular.ttf" id="4_1sb1x"]
 [ext_resource type="Texture2D" uid="uid://cqqy1x7afhsa3" path="res://assets/Buildings/Blue Buildings/Tower.png" id="5_fjdb1"]
 [ext_resource type="Texture2D" uid="uid://ct57gr8hitvd1" path="res://assets/Terrain/Tileset/Water Background color.png" id="6_08x40"]
 [ext_resource type="Texture2D" uid="uid://bt2j72rseokun" path="res://assets/Terrain/Decorations/Clouds/Clouds_01.png" id="7_ju1ab"]
@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://bcag3ak5dychb" path="res://assets/Terrain/Decorations/Rocks in the Water/Water Rocks_04.png" id="12_twuxb"]
 [ext_resource type="Texture2D" uid="uid://d01n5xrk7gukb" path="res://assets/Terrain/Decorations/Rocks/Rock2.png" id="13_jj13x"]
 [ext_resource type="Texture2D" uid="uid://cb52ckof8vywa" path="res://assets/Terrain/Decorations/Rocks/Rock4.png" id="14_hy13s"]
-[ext_resource type="Texture2D" uid="uid://3b4bfbu7y1hk" path="res://assets/Units/Blue Units/Archer/Archer_Run.png" id="15_5jr5q"]
+[ext_resource type="Texture2D" uid="uid://3b4bfbu7y1hk" path="res://assets/Units/Blue/Archer/Archer_Run.png" id="15_5jr5q"]
 [ext_resource type="Texture2D" uid="uid://be3ehkqn8jxfi" path="res://assets/UI Elements/UI Elements/Swords/Swords.png" id="16_cj6f4"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7vrkn"]
@@ -780,10 +780,10 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 1.0
-offset_top = 6.0
-offset_right = 1.0
-offset_bottom = 6.0
+offset_left = 96.0
+offset_top = 40.0
+offset_right = 96.0
+offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1l2iv")
@@ -794,41 +794,41 @@ tile_set = SubResource("TileSet_xt50i")
 
 [node name="StartRibbon" type="Control" parent="." unique_id=2136965709]
 anchors_preset = 0
-offset_left = 50.0
-offset_top = -100.0
-offset_right = 90.0
-offset_bottom = -60.0
+offset_left = -42.0
+offset_top = -135.0
+offset_right = -2.0
+offset_bottom = -95.0
 
 [node name="RibbonStart" type="TextureRect" parent="StartRibbon" unique_id=1173360850]
 layout_mode = 0
-offset_left = 350.0
-offset_top = 407.0
-offset_right = 511.0
-offset_bottom = 539.0
+offset_left = 445.0
+offset_top = 441.0
+offset_right = 606.0
+offset_bottom = 573.0
 texture = SubResource("AtlasTexture_xt50i")
 
 [node name="RibbonMiddle" type="TextureRect" parent="StartRibbon" unique_id=890139289]
 layout_mode = 0
-offset_left = 406.0
-offset_top = 403.0
-offset_right = 567.0
-offset_bottom = 535.0
+offset_left = 501.0
+offset_top = 437.0
+offset_right = 662.0
+offset_bottom = 569.0
 texture = SubResource("AtlasTexture_cm266")
 
 [node name="RibbonMiddle2" type="TextureRect" parent="StartRibbon" unique_id=1322725255]
 layout_mode = 0
-offset_left = 467.0
-offset_top = 403.0
-offset_right = 628.0
-offset_bottom = 535.0
+offset_left = 562.0
+offset_top = 437.0
+offset_right = 723.0
+offset_bottom = 569.0
 texture = SubResource("AtlasTexture_cm266")
 
 [node name="RibbonEnd" type="TextureRect" parent="StartRibbon" unique_id=1047241466]
 layout_mode = 0
-offset_left = 535.0
-offset_top = 399.0
-offset_right = 696.0
-offset_bottom = 531.0
+offset_left = 630.0
+offset_top = 433.0
+offset_right = 791.0
+offset_bottom = 565.0
 texture = SubResource("AtlasTexture_w44g7")
 
 [node name="ExitRibbon" type="Control" parent="." unique_id=671081193]
@@ -901,6 +901,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -28.0
+offset_top = -13.0
+offset_right = -28.0
+offset_bottom = -13.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -938,10 +942,10 @@ texture = ExtResource("7_ju1ab")
 
 [node name="ClouldLeft" type="TextureRect" parent="Decoration" unique_id=313838104]
 layout_mode = 0
-offset_left = -23.0
-offset_top = -54.0
-offset_right = 553.0
-offset_bottom = 202.0
+offset_left = -38.0
+offset_top = -50.0
+offset_right = 538.0
+offset_bottom = 206.0
 texture = ExtResource("8_ov3e3")
 
 [node name="Bushes" type="TextureRect" parent="Decoration" unique_id=952294795]

@@ -20,9 +20,14 @@ config/icon="res://icon.svg"
 UnitData="*uid://cit83cmfrlxk"
 GridUtils="*uid://clkhjs23dcr2n"
 TurnManager="*uid://c1i5s22kjmbrt"
+Deployment="*uid://4m6gy0hv8rjv"
+AttackRange="*uid://cenwemqei1dee"
+MovementRange="*uid://cdfqa33uva32s"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=768
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
