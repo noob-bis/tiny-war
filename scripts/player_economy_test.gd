@@ -120,6 +120,39 @@ func _ready() -> void:
 		signal_count == 5
 	)
 
+# Task 2.1.6.3 - Kill Bonus Tests
+	print("===== KILL BONUS TEST =====")
+
+	# TEST 14: Melee costs 100, so bonus is 50.
+	check(
+		"Melee kill bonus is 50",
+		economy.get_kill_bonus("melee") == 50
+	)
+
+	# TEST 15: Ranged costs 120, so bonus is 60.
+	check(
+		"Ranged kill bonus is 60",
+		economy.get_kill_bonus("ranged") == 60
+	)
+
+	# TEST 16: Tank costs 150, so bonus is 75.
+	check(
+		"Tank kill bonus is 75",
+		economy.get_kill_bonus("tank") == 75
+	)
+
+	# TEST 17: Invalid unit returns 0.
+	check(
+		"Invalid unit returns 0",
+		economy.get_kill_bonus("wrong") == 0
+	)
+
+	# TEST 18: Calculating bonus does not change coins.
+	check(
+		"Kill bonus does not change player balances",
+		economy.get_coins(1) == 250 and economy.get_coins(2) == 250
+	)
+
 	print("===== TEST COMPLETE =====")
 
 
