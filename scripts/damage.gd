@@ -2,9 +2,9 @@ extends Node
 
 # Stores which unit type beats another
 const COUNTERS = {
-	"Melee": "Ranged",
-	"Ranged": "Tank",
-	"Tank": "Melee"
+	"melee": "ranged",
+	"ranged": "tank",
+	"tank": "melee"
 }
 
 # Gets the damage modifier based on unit types
