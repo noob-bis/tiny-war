@@ -116,3 +116,21 @@ func reset_economy() -> void:
 	coins_changed.emit(2, player_coins[2])
 
 	print("Player economy reset.")
+
+# Return half the cost of a defeated enemy unit.
+func get_kill_bonus(unit_type: String) -> int:
+	# Get the unit information from UnitData.
+	var stats: Dictionary = UnitData.get_stats(unit_type)
+
+	# Check if the unit type is invalid.
+	if stats.is_empty():
+		push_warning("Invalid unit type: " + unit_type)
+		return 0
+
+	# Get the original cost from UnitData.
+	var unit_cost: int = int(stats.get("cost", 0))
+
+	# Calculate 50% of the unit cost.
+	var bonus: int = int(unit_cost * 0.5)
+
+	return bonus
