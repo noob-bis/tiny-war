@@ -1,25 +1,9 @@
 extends Node
 
 # Tiny War - Attack Range Check
-# Task 2.1.3.1
+# Task 2.1.3.1 - Range Cleanup
 
-# Our battlefield has 12 columns and 8 rows.
-const COLUMNS = 12
-const ROWS = 8
-
-
-# Check if a tile is inside the battlefield.
-func is_inside_grid(tile: Vector2i) -> bool:
-
-	# Check the horizontal position.
-	if tile.x < 0 or tile.x >= COLUMNS:
-		return false
-
-	# Check the vertical position.
-	if tile.y < 0 or tile.y >= ROWS:
-		return false
-
-	return true
+# Map boundaries are checked using GridUtils.
 
 
 # Check if an enemy is close enough to attack.
@@ -35,12 +19,12 @@ func can_attack(
 	attack_range: int
 ) -> bool:
 
-	# Check if the attacker is inside the battlefield.
-	if not is_inside_grid(attacker_position):
+	# Ask GridUtils if the attacker is inside the battlefield.
+	if not GridUtils.is_cell_inside(attacker_position):
 		return false
 
-	# Check if the target is inside the battlefield.
-	if not is_inside_grid(target_position):
+	# Ask GridUtils if the target is inside the battlefield.
+	if not GridUtils.is_cell_inside(target_position):
 		return false
 
 	# Units must have a valid attack range.
@@ -49,7 +33,7 @@ func can_attack(
 
 	# Calculate the distance between the two units.
 	# We count horizontal and vertical tiles.
-	var distance = (
+	var distance: int = (
 		abs(target_position.x - attacker_position.x)
 		+ abs(target_position.y - attacker_position.y)
 	)

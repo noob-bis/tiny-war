@@ -1,49 +1,28 @@
 extends Node
 
 # Tiny War - Movement Range and Pathfinding
+# Task 2.1.3.1 - Range Cleanup
 # Task 2.1.4.4 - Find Path
+#
+# Unit movement values come from UnitData.
+# Map boundaries are checked using GridUtils.
 
 
-# Our battlefield has 12 columns and 8 rows.
-const COLUMNS = 12
-const ROWS = 8
-
-# Each unit has a different movement limit.
-const MELEE_MOVE = 3
-const RANGED_MOVE = 2
-const TANK_MOVE = 1
-
-
-# Find out how far a unit is allowed to move.
+# Get the movement range for a unit.
 func get_movement_range(unit_type: String) -> int:
 
-	if unit_type == "melee":
-		return MELEE_MOVE
+	# Ask UnitData for the unit's stats.
+	var stats: Dictionary = UnitData.get_stats(unit_type)
 
-	elif unit_type == "ranged":
-		return RANGED_MOVE
+	# Unknown units cannot move.
+	if stats.is_empty():
+		return 0
 
-	elif unit_type == "tank":
-		return TANK_MOVE
-
-	# Unknown unit types cannot move.
-	return 0
-
-
-# Check whether a tile is inside the battlefield.
-func is_inside_grid(tile: Vector2i) -> bool:
-
-	if tile.x < 0 or tile.x >= COLUMNS:
-		return false
-
-	if tile.y < 0 or tile.y >= ROWS:
-		return false
-
-	return true
+	# Return the movement number from UnitData.
+	return int(stats.get("move", 0))
 
 
 # Check whether a unit can move to another tile.
-# This is the original movement-range check.
 func can_move(
 	start: Vector2i,
 	target: Vector2i,
@@ -51,21 +30,24 @@ func can_move(
 ) -> bool:
 
 	# Both positions must be inside the battlefield.
-	if not is_inside_grid(start):
+	if not GridUtils.is_cell_inside(start):
 		return false
 
-	if not is_inside_grid(target):
+	if not GridUtils.is_cell_inside(target):
 		return false
 
-	# Get the movement limit for this unit.
-	var move_limit = get_movement_range(unit_type)
+	# Get the movement limit from UnitData.
+	var move_limit: int = get_movement_range(unit_type)
 
 	# Unknown unit types cannot move.
-	if move_limit == 0:
+	if move_limit <= 0:
 		return false
 
 	# Calculate horizontal and vertical distance.
-	var distance = abs(target.x - start.x) + abs(target.y - start.y)
+	var distance: int = (
+		abs(target.x - start.x)
+		+ abs(target.y - start.y)
+	)
 
 	# A unit must move to a different tile.
 	if distance == 0:
@@ -78,8 +60,6 @@ func can_move(
 	return true
 
 
-# NEW FUNCTION - Task 2.1.4.4
-#
 # Find the shortest path from start to goal.
 #
 # start: The unit's current tile.
@@ -87,8 +67,8 @@ func can_move(
 # blocked: Tiles occupied by other units.
 # max_steps: Maximum number of tiles the unit can move.
 #
-# Returns the tiles the unit should walk through.
-# The starting tile is NOT included.
+# Returns a list of tiles to walk through.
+# The starting tile is not included.
 #
 # Returns an empty array if no valid path exists.
 func find_path(
@@ -98,21 +78,22 @@ func find_path(
 	max_steps: int
 ) -> Array[Vector2i]:
 
-	# Stores the final path.
+	# Store the final path.
 	var path: Array[Vector2i] = []
 
-	# Reject positions outside the battlefield.
-	if not is_inside_grid(start):
+	# Reject starting positions outside the map.
+	if not GridUtils.is_cell_inside(start):
 		return path
 
-	if not is_inside_grid(goal):
+	# Reject destinations outside the map.
+	if not GridUtils.is_cell_inside(goal):
 		return path
 
-	# The destination cannot be occupied.
+	# Reject occupied destinations.
 	if goal in blocked:
 		return path
 
-	# No movement is needed if already at the goal.
+	# No movement is needed if start and goal match.
 	if start == goal:
 		return path
 
@@ -120,7 +101,7 @@ func find_path(
 	if max_steps <= 0:
 		return path
 
-	# Four allowed directions.
+	# Four allowed movement directions.
 	# Diagonal movement is not allowed.
 	var directions: Array[Vector2i] = [
 		Vector2i(1, 0),   # Right
@@ -129,89 +110,85 @@ func find_path(
 		Vector2i(0, -1)   # Up
 	]
 
-	# Breadth-First Search (BFS) checks nearby tiles
-	# before checking tiles farther away.
-	#
-	# This allows us to find the shortest path.
+	# Breadth-First Search (BFS) finds the shortest path.
+	# It checks nearby tiles before distant tiles.
 	var queue: Array[Vector2i] = [start]
 
-	# Remember which tiles have already been visited.
+	# Track which tiles have already been visited.
 	var visited = {
 		start: true
 	}
 
-	# Store where we came from for each tile.
-	# This lets us rebuild the shortest path.
+	# Remember the previous tile for each position.
+	# This lets us rebuild the path later.
 	var came_from = {}
 
-	# Store the distance from the starting tile.
+	# Track the number of steps from the start.
 	var distances = {
 		start: 0
 	}
 
-	# Track the next tile to process.
+	# Track the next tile to check.
 	var queue_index: int = 0
 
-	# Continue until every reachable tile is checked.
+	# Keep searching while there are tiles in the queue.
 	while queue_index < queue.size():
 
-		# Get the next tile to examine.
+		# Get the next tile.
 		var current: Vector2i = queue[queue_index]
 		queue_index += 1
 
-		# Stop searching if we reached the destination.
+		# Stop if we reached the destination.
 		if current == goal:
 			break
 
-		# Do not search beyond the movement limit.
+		# Do not exceed the movement limit.
 		if distances[current] >= max_steps:
 			continue
 
-		# Check all four neighboring tiles.
+		# Check the four neighboring tiles.
 		for direction in directions:
 
 			var next_tile: Vector2i = current + direction
 
-			# Skip tiles outside the battlefield.
-			if not is_inside_grid(next_tile):
+			# Ignore tiles outside the battlefield.
+			if not GridUtils.is_cell_inside(next_tile):
 				continue
 
-			# Skip tiles occupied by other units.
+			# Ignore tiles occupied by other units.
 			if next_tile in blocked:
 				continue
 
-			# Skip tiles we already checked.
+			# Ignore tiles that were already checked.
 			if visited.has(next_tile):
 				continue
 
-			# Remember this tile.
+			# Mark the tile as visited.
 			visited[next_tile] = true
 
-			# Remember how we reached this tile.
+			# Remember which tile led here.
 			came_from[next_tile] = current
 
-			# Record how many steps it took.
+			# Record the distance from the start.
 			distances[next_tile] = distances[current] + 1
 
-			# Add the tile to the search queue.
+			# Add this tile to the search queue.
 			queue.append(next_tile)
 
-	# If the destination was never reached,
-	# there is no valid path.
+	# No path exists if the goal was never reached.
 	if not visited.has(goal):
 		return path
 
-	# Rebuild the path by walking backward
-	# from the destination to the starting tile.
+	# Rebuild the shortest path backward.
 	var current_tile: Vector2i = goal
 
 	while current_tile != start:
 
-		# Add each tile to the beginning of the path.
+		# Insert the tile at the front of the path.
 		path.push_front(current_tile)
 
 		# Move backward to the previous tile.
 		current_tile = came_from[current_tile]
 
-	# Return the shortest path.
+	# Return the completed shortest path.
 	return path
