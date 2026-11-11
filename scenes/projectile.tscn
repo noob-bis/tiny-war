@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://bsejdnaufwtdx"]
+
+[ext_resource type="Script" uid="uid://dqka7sru77bxe" path="res://scripts/projectile.gd" id="1_q3m7n"]
+[ext_resource type="Texture2D" uid="uid://bgargama01dbi" path="res://assets/Projectiles/fireball_spritesheet.png" id="2_q3m7n"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q3m7n"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(0, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_softn"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(429, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6q2a6"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(858, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_byeak"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(1287, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jxwu6"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(1716, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w7nm8"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(2145, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6c2e5"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(2574, 0, 429, 218)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pl1gp"]
+atlas = ExtResource("2_q3m7n")
+region = Rect2(3003, 0, 429, 218)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_cfy5v"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q3m7n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_softn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6q2a6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_byeak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jxwu6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w7nm8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6c2e5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pl1gp")
+}],
+"loop": 1,
+"name": &"fireball",
+"speed": 12.0
+}]
+
+[node name="Projectile" type="Node2D" unique_id=1447943131]
+script = ExtResource("1_q3m7n")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1978782744]
+sprite_frames = SubResource("SpriteFrames_cfy5v")
+animation = &"fireball"
+frame_progress = 0.5407639
