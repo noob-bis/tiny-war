@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://fyx8lhryhvmx" path="res://scripts/battle_grid.gd" id="2_7eff0"]
 [ext_resource type="Script" uid="uid://ck4c1irgocv58" path="res://scripts/base_destroy.gd" id="3_jx2v5"]
 [ext_resource type="Texture2D" uid="uid://cyrn3g2s4i3fa" path="res://assets/Buildings/Black Buildings/Tower.png" id="3_qd8ff"]
-[ext_resource type="Texture2D" uid="uid://dejiyr1o50ngx" path="res://assets/Buildings/Red Buildings/Tower.png" id="4_admde"]
 [ext_resource type="Texture2D" uid="uid://c3bl6x8u1u7rn" path="res://assets/Terrain/Resources/Wood/Trees/Tree1.png" id="5_admde"]
 [ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
 [ext_resource type="Script" uid="uid://duncda31sr452" path="res://scripts/mouse_input.gd" id="8_0xsog"]
@@ -126,11 +125,6 @@ texture = ExtResource("3_qd8ff")
 [node name="RedBase" type="Node2D" parent="." unique_id=1670148234]
 script = ExtResource("3_jx2v5")
 player_id = 2
-
-[node name="Sprite2D" type="Sprite2D" parent="RedBase" unique_id=804309082]
-position = Vector2(1040, 443.00003)
-scale = Vector2(1.2617191, 1.1328124)
-texture = ExtResource("4_admde")
 
 [node name="Decoration" type="Node2D" parent="." unique_id=838903480]
 
