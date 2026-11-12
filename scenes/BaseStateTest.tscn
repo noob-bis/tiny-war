@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cic4hc0ctics2"]
+
+[ext_resource type="Script" uid="uid://0i8nkpqeqe06" path="res://scripts/base_state_test.gd" id="1_ep0fm"]
+
+[node name="BaseStateTest" type="Node2D" unique_id=241921183]
+script = ExtResource("1_ep0fm")
