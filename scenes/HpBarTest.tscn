@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://d04v1h5ntvcrg"]
+
+[ext_resource type="Script" uid="uid://dqugsdwwkcusv" path="res://scripts/hp_bar_test.gd" id="1_nlkxs"]
+
+[node name="HpBarTest" type="Node2D" unique_id=1127385712]
+script = ExtResource("1_nlkxs")
