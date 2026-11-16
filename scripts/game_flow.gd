@@ -37,6 +37,7 @@ func _process(_delta: float) -> void:
 	update_hud()
 	for unit in units:
 		update_bar(unit)
+	update_base_bars()
 
 func _ready() -> void:
 	z_index = 10
@@ -65,7 +66,6 @@ func _ready() -> void:
 		var base_bar = HP_BAR_SCENE.instantiate()
 		add_child(base_bar)
 		base_bars[player] = base_bar
-
 
 func _draw() -> void:
 	for tile in Obstacles.TILES:
@@ -358,7 +358,7 @@ func update_base_bars() -> void:
 	for player in base_bars:
 		var base = blue_base if player == 1 else red_base
 		var bar = base_bars[player]
-		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(8, -70)
+		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(8, -30)
 		if bar.current_hp != base.base_hp:
 			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
 
