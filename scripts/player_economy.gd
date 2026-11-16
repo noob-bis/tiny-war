@@ -19,11 +19,9 @@ var player_coins = {
 # Tell other scripts whenever a player's coins change
 signal coins_changed(player_number: int, new_balance: int)
 
-
 # Check if the player number is valid
 func is_valid_player(player_number: int) -> bool:
 	return player_number == 1 or player_number == 2
-
 
 # Get the current coin balance for a player
 func get_coins(player_number: int) -> int:
@@ -32,7 +30,6 @@ func get_coins(player_number: int) -> int:
 		return 0
 
 	return player_coins[player_number]
-
 
 # Calculate passive income based on the turn number
 # Turns 1-5:   150 coins
@@ -53,7 +50,6 @@ func get_income_for_turn(turn_number: int) -> int:
 	var income: int = PASSIVE_INCOME + increases * INCOME_INCREASE
 
 	return income
-
 
 # Give passive income to a player
 # player_number identifies Player 1 or Player 2.
@@ -103,6 +99,15 @@ func spend_coins(player_number: int, amount: int) -> bool:
 		coins_changed.emit(player_number, player_coins[player_number])
 		#print("Spend coin -> true")
 		return true
+
+# Give coins to a player (used for the kill bonus).
+func add_coins(player_number: int, amount: int) -> void:
+	if not is_valid_player(player_number):
+		return
+	if amount <= 0:
+		return
+	player_coins[player_number] += amount
+	coins_changed.emit(player_number, player_coins[player_number])
 
 # Reset both players' coins when starting a new match.
 func reset_economy() -> void:
