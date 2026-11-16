@@ -3,43 +3,39 @@ extends Node2D
 const MAX_UNITS_PER_PLAYER = 6
 const BASE_POSITIONS = {
 	1: Vector2i(1, 1),
-	2: Vector2i(10,6),
-}
-var selected_unit_index = -1
-var selected_deploy_type := "melee";
-
-@onready var mouse_input = $"../MouseInput"
-@onready var player_economy = $"../PlayerEconomy"
-@onready var turn_counter = $"../TurnCounter"
-@onready var blue_base = $"../BlueBase"
-@onready var red_base = $"../RedBase"
-
-@onready var monk_blue_texture = preload("res://assets/Units/Blue/Monk/Monk.png")
-@onready var monk_red_texture = preload("res://assets/Units/Red/Monk/Monk.png")
-
-@onready var player1_hud = $"../CanvasLayer/Player1HUD"
-@onready var player2_hud = $"../CanvasLayer/Player2HUD"
-@onready var phase_hud = $"../CanvasLayer/Phase"
-
-@onready var winner_label = $"../CanvasLayer/WinnerLabel"
-
-@onready var picker = $"../CanvasLayer/Picker"
-
-var units: Array = []
-
+	2: Vector2i(10,6),}
 const SKINS = {
 	"1_melee": preload("res://assets/Units/Blue/Melee/Melee.png"),
 	"2_melee": preload("res://assets/Units/Red/Melee/Melee.png"),
 	"1_ranged": preload("res://assets/Units/Blue/Melee/Melee.png"), # placeholder until Dev's Ranged pictures
 	"2_ranged": preload("res://assets/Units/Red/Melee/Melee.png"),
 	"1_tank": preload("res://assets/Units/Blue/Tank/Warrior_Blue.png"),
-	"2_tank": preload("res://assets/Units/Red/Tank/Warrior_Red.png"),
-}
+	"2_tank": preload("res://assets/Units/Red/Tank/Warrior_Red.png"),}
+const HP_BAR_SCENE = preload("res://scenes/HpBar.tscn")
+
+var selected_unit_index = -1
+var selected_deploy_type := "melee";
+var units: Array = []
+
+@onready var mouse_input = $"../MouseInput"
+@onready var player_economy = $"../PlayerEconomy"
+@onready var turn_counter = $"../TurnCounter"
+@onready var blue_base = $"../BlueBase"
+@onready var red_base = $"../RedBase"
+@onready var monk_blue_texture = preload("res://assets/Units/Blue/Monk/Monk.png")
+@onready var monk_red_texture = preload("res://assets/Units/Red/Monk/Monk.png")
+@onready var player1_hud = $"../CanvasLayer/Player1HUD"
+@onready var player2_hud = $"../CanvasLayer/Player2HUD"
+@onready var phase_hud = $"../CanvasLayer/Phase"
+@onready var winner_label = $"../CanvasLayer/WinnerLabel"
+@onready var picker = $"../CanvasLayer/Picker"
 
 # METHODS
 
 func _process(_delta: float) -> void:
 	update_hud()
+	for unit in units:
+		update_bar(unit)
 
 func _ready() -> void:
 	z_index = 10
@@ -50,8 +46,6 @@ func _ready() -> void:
 	
 	blue_base.base_destroyed.connect(_on_base_destroyed)
 	red_base.base_destroyed.connect(_on_base_destroyed)
-	
-	player_economy.coins_changed.connect(update_hud)
 	
 	TurnManager.player_changed.connect(_on_player_changed)
 	TurnManager.phase_changed.connect(_on_phase_changed)
@@ -126,13 +120,16 @@ func _on_place_unit(tile: Vector2i) -> void:
 			print("Cant purchase unit, not enough coin")
 			return
 		else:
+			var bar = HP_BAR_SCENE.instantiate()
+			add_child(bar)
 			units.append({
 				"player": current_player,
 				"type": selected_deploy_type,
 				"position": tile,
 				"hp": unit["hp"],
 				"acted": false,
-				"moved": false
+				"moved": false,
+				"bar": bar
 			})
 
 			queue_redraw() # to make the cicle appear
@@ -198,6 +195,7 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					units[i]["hp"] -= damage
 
 					if units[i]["hp"] <= 0:
+						units[i]["bar"].queue_free()
 						units.erase(units[i])
 						print("Dealt damage, Unit removed")
 						selected_unit_index = -1
@@ -311,6 +309,7 @@ func apply_base_damage(player: int) -> void:
 		if unit["player"] == player:
 			unit["hp"] -= BaseAttack.get_base_attack_damage(BASE_POSITIONS[enemy], unit["position"], true)
 			if unit["hp"] <= 0:
+				unit["bar"].queue_free()
 				continue
 		survivors.append(unit)
 	units = survivors
@@ -340,6 +339,13 @@ func _on_turn_limit() -> void:
 	else:
 		winner_label.text = "Player %d wins!" % winner
 	winner_label.visible = true
+
+func update_bar(unit: Dictionary) -> void:
+	var bar = unit["bar"]
+	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(8, 0)
+	var max_hp = UnitData.get_stats(unit["type"])["hp"]
+	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
+		bar.set_hp(unit["hp"], max_hp)
 
 func end_turn() -> void:
 	TurnManager.advance_phase()
