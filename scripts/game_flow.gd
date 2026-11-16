@@ -7,10 +7,11 @@ const BASE_POSITIONS = {
 const SKINS = {
 	"1_melee": preload("res://assets/Units/Blue/Melee/Melee.png"),
 	"2_melee": preload("res://assets/Units/Red/Melee/Melee.png"),
-	"1_ranged": preload("res://assets/Units/Blue/Melee/Melee.png"), # placeholder until Dev's Ranged pictures
-	"2_ranged": preload("res://assets/Units/Red/Melee/Melee.png"),
+	"1_ranged": preload("res://assets/Units/Blue/Ranged/Ranged.png"),
+	"2_ranged": preload("res://assets/Units/Red/Ranged/Ranged.png"),
 	"1_tank": preload("res://assets/Units/Blue/Tank/Warrior_Blue.png"),
 	"2_tank": preload("res://assets/Units/Red/Tank/Warrior_Red.png"),}
+
 const HP_BAR_SCENE = preload("res://scenes/HpBar.tscn")
 
 var selected_unit_index = -1
