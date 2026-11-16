@@ -16,6 +16,7 @@ const HP_BAR_SCENE = preload("res://scenes/HpBar.tscn")
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
 var units: Array = []
+var base_bars: Dictionary = {}
 
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
@@ -59,6 +60,12 @@ func _ready() -> void:
 		button.text = "%s\n%d" % [button.name, UnitData.get_stats(String(button.name))["cost"]]
 	_on_pick("melee")
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
+	
+	for player in BASE_POSITIONS:
+		var base_bar = HP_BAR_SCENE.instantiate()
+		add_child(base_bar)
+		base_bars[player] = base_bar
+
 
 func _draw() -> void:
 	for tile in Obstacles.TILES:
@@ -346,6 +353,14 @@ func update_bar(unit: Dictionary) -> void:
 	var max_hp = UnitData.get_stats(unit["type"])["hp"]
 	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
 		bar.set_hp(unit["hp"], max_hp)
+
+func update_base_bars() -> void:
+	for player in base_bars:
+		var base = blue_base if player == 1 else red_base
+		var bar = base_bars[player]
+		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(8, -70)
+		if bar.current_hp != base.base_hp:
+			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
 
 func end_turn() -> void:
 	TurnManager.advance_phase()
