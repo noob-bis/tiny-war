@@ -37,6 +37,7 @@ func _process(_delta: float) -> void:
 	update_hud()
 	for unit in units:
 		update_bar(unit)
+	update_base_bars()
 
 func _ready() -> void:
 	z_index = 10
@@ -133,7 +134,7 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"player": current_player,
 				"type": selected_deploy_type,
 				"position": tile,
-				"hp": unit["hp"],
+				"hp": 1,
 				"acted": false,
 				"moved": false,
 				"bar": bar
@@ -202,6 +203,8 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					units[i]["hp"] -= damage
 
 					if units[i]["hp"] <= 0:
+						var bonus = player_economy.get_kill_bonus(units[i]["type"])
+						player_economy.add_coins(current_player, bonus)
 						units[i]["bar"].queue_free()
 						units.erase(units[i])
 						print("Dealt damage, Unit removed")
@@ -358,7 +361,7 @@ func update_base_bars() -> void:
 	for player in base_bars:
 		var base = blue_base if player == 1 else red_base
 		var bar = base_bars[player]
-		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(8, -70)
+		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(8, -30)
 		if bar.current_hp != base.base_hp:
 			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
 
