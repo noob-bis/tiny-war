@@ -16,6 +16,9 @@ const HIGHLIGHT_DEPLOY = Color(0.2, 0.9, 0.3, 0.35)
 const HIGHLIGHT_MOVE = Color(0.2, 0.5, 1.0, 0.35)
 const HIGHLIGHT_ATTACK = Color(1.0, 0.2, 0.2, 0.8)
 const MESSAGE_TIME = 2.0
+const IMPACT_SCENE = preload("res://scenes/impact.tscn")
+const FLASH_TIME_UNIT = 0.2
+const DONE_TINT = Color(0.5, 0.5, 0.5)
 
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
@@ -23,6 +26,7 @@ var units: Array = []
 var base_bars: Dictionary = {}
 var game_over := false
 var message_timer: SceneTreeTimer
+var base_effects: Dictionary = {}
 
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
@@ -74,6 +78,14 @@ func _ready() -> void:
 		var base_bar = HP_BAR_SCENE.instantiate()
 		add_child(base_bar)
 		base_bars[player] = base_bar
+		
+	for player in BASE_POSITIONS:
+		var effect = IMPACT_SCENE.instantiate()
+		add_child(effect)
+		effect.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(32, 0)
+		base_effects[player] = effect
+	blue_base.damage_state_changed.connect(_on_base_state_changed)
+	red_base.damage_state_changed.connect(_on_base_state_changed)
 
 func _draw() -> void:
 	for tile in Obstacles.TILES:
@@ -102,11 +114,15 @@ func _draw() -> void:
 		var tile_bottom_center = GridUtils.cell_to_pixel(unit["position"]) + Vector2(32, 64)
 		var size = Vector2(128, 128)
 		var pos = tile_bottom_center - Vector2(size.x / 2, size.y)
+		var tint = DONE_TINT if is_done(unit) else Color.WHITE
+		if unit.get("flash", false):
+			tint = Color(1, 0.3, 0.3)
 		draw_texture_rect(texture, Rect2(pos, size), false)
 		
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
 			draw_rect(Rect2(pos, Vector2(64, 64)), Color.YELLOW, false, 3.0)
+			
 
 func occupied_tiles() -> Array:
 	var tiles = BASE_POSITIONS.values() + Obstacles.TILES
@@ -220,6 +236,7 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					var damage = Damage.calculate_damage(attacker_type, units[i]["type"], attacker_stats["atk"])
 					units[attacker_index]["acted"] = true
 					units[i]["hp"] -= damage
+					flash_unit(units[i])
 
 					if units[i]["hp"] <= 0:
 						var bonus = player_economy.get_kill_bonus(units[i]["type"])
@@ -444,3 +461,20 @@ func show_message(text: String) -> void:
 	await timer.timeout
 	if message_timer == timer:  # a newer message keeps showing
 		message_label.visible = false
+
+func _on_base_state_changed(player: int, state: String) -> void:
+	base_effects[player].set_base_state(state)
+
+func flash_unit(unit: Dictionary) -> void:
+	unit["flash"] = true
+	queue_redraw()
+	await get_tree().create_timer(FLASH_TIME_UNIT).timeout
+	unit["flash"] = false
+	queue_redraw()
+
+func is_done(unit: Dictionary) -> bool:
+	# grey when the unit has nothing left to do in this phase
+	if unit["player"] != TurnManager.current_player:
+		return false
+	var phase = TurnManager.get_current_phase()
+	return (phase == "Move" and unit["moved"]) or (phase == "Act" and unit["acted"])

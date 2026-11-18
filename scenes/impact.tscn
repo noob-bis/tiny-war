@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://b4k3aqcptjccv"]
 
 [ext_resource type="Texture2D" uid="uid://dvhjb5yhac5ur" path="res://smoke/smoke-gray-48.png" id="1_32ckd"]
-[ext_resource type="Script" uid="uid://xrn3yinllguh" path="res://scenes/impact.gd" id="1_ib0fc"]
+[ext_resource type="Script" uid="uid://sxet4h4d1cia" path="res://scripts/impact.gd" id="1_ib0fc"]
 [ext_resource type="Texture2D" uid="uid://bpboym21yxnot" path="res://flames/flame-fire-48.png" id="2_mhqou"]
 [ext_resource type="Texture2D" uid="uid://cimq7h2oj1mmw" path="res://flames/flame-fire-64.png" id="3_lxk3r"]
 
@@ -369,19 +369,16 @@ animations = [{
 script = ExtResource("1_ib0fc")
 
 [node name="Smoke" type="AnimatedSprite2D" parent="." unique_id=1989268522]
-position = Vector2(558, 269)
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_plow7")
 animation = &"smoke"
 
 [node name="Fire" type="AnimatedSprite2D" parent="." unique_id=843392691]
-position = Vector2(605, 273)
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_cfy5v")
 animation = &"fire"
 
 [node name="BigFlame" type="AnimatedSprite2D" parent="." unique_id=2032603430]
-position = Vector2(648, 269)
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_oobyn")
 animation = &"big_flame"
