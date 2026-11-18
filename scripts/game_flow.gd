@@ -15,13 +15,14 @@ const HP_BAR_SCENE = preload("res://scenes/HpBar.tscn")
 const HIGHLIGHT_DEPLOY = Color(0.2, 0.9, 0.3, 0.35)
 const HIGHLIGHT_MOVE = Color(0.2, 0.5, 1.0, 0.35)
 const HIGHLIGHT_ATTACK = Color(1.0, 0.2, 0.2, 0.8)
-
+const MESSAGE_TIME = 2.0
 
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
 var units: Array = []
 var base_bars: Dictionary = {}
 var game_over := false
+var message_timer: SceneTreeTimer
 
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
@@ -35,8 +36,8 @@ var game_over := false
 @onready var phase_hud = $"../CanvasLayer/Phase"
 @onready var winner_label = $"../CanvasLayer/WinnerLabel"
 @onready var picker = $"../CanvasLayer/Picker"
-
-@onready var end_turn_button = $"../CanvasLayer/EndTurnButton"
+@onready var end_turn_button = $"../CanvasLayer/EndturnButton"
+@onready var message_label = $"../CanvasLayer/Message"
 
 # METHODS
 
@@ -125,14 +126,14 @@ func _on_place_unit(tile: Vector2i) -> void:
 
 	# if clicked tile is not in that list
 	if tile not in deploy_zone:
-		print("Selected tile is not in deploy zone")
+		show_message("Deploy next to your own base")
 	else: # if okat to deploy
 		if tile in occupied_tiles():
-			print("Tile already occupied")
+			show_message("That tile is taken")
 			return
 
 		if count_total_units(current_player) >= MAX_UNITS_PER_PLAYER:
-			print("Max unit amount reached, cant deploy more")
+			show_message("You already have 6 units")
 			return
 
 		# check unit cost
@@ -141,7 +142,7 @@ func _on_place_unit(tile: Vector2i) -> void:
 
 		# try to purchase
 		if !player_economy.spend_coins(current_player, cost):
-			print("Cant purchase unit, not enough coin")
+			show_message("Not enough coins")
 			return
 		else:
 			var bar = HP_BAR_SCENE.instantiate()
@@ -192,7 +193,7 @@ func _on_attack_unit(tile: Vector2i) -> void:
 				return
 				
 		if units[selected_unit_index]["acted"]:
-			print("This unit already attacked this turn")
+			show_message("This unit already attacked")
 			return
 
 		var other_player = 1 if current_player == 2 else 2
@@ -235,7 +236,7 @@ func _on_attack_unit(tile: Vector2i) -> void:
 						queue_redraw()
 						return
 				else:
-					print("Out of Range")
+					show_message("Out of range")
 					queue_redraw()
 					return
 
@@ -265,13 +266,13 @@ func _on_move_unit(tile: Vector2i) -> void:
 				return
 				
 		if tile in occupied_tiles():
-			print("Cant move to this tile, occupied!")
+			show_message("Can't move there")
 			return
 
 		var moving_index = selected_unit_index
 		var mover = units[moving_index]
 		if mover["moved"]:
-			print("This unit already moved this turn")
+			show_message("This unit already moved")
 			return
 
 		var path = MovementRange.find_path(
@@ -281,7 +282,7 @@ func _on_move_unit(tile: Vector2i) -> void:
 			MovementRange.get_movement_range(mover["type"])
 		)
 		if path.is_empty():
-			print("Cant move to this tile")
+			show_message("Can't move there")
 			return
 
 		mover["position"] = tile
@@ -434,3 +435,12 @@ func attack_targets(unit: Dictionary) -> Array:
 	if AttackRange.can_attack(unit["position"], BASE_POSITIONS[enemy], attack_range):
 		tiles.append(BASE_POSITIONS[enemy])
 	return tiles
+
+func show_message(text: String) -> void:
+	message_label.text = text
+	message_label.visible = true
+	var timer = get_tree().create_timer(MESSAGE_TIME)
+	message_timer = timer
+	await timer.timeout
+	if message_timer == timer:  # a newer message keeps showing
+		message_label.visible = false
