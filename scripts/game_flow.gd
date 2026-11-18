@@ -11,8 +11,11 @@ const SKINS = {
 	"2_ranged": preload("res://assets/Units/Red/Ranged/Ranged.png"),
 	"1_tank": preload("res://assets/Units/Blue/Tank/Warrior_Blue.png"),
 	"2_tank": preload("res://assets/Units/Red/Tank/Warrior_Red.png"),}
-
 const HP_BAR_SCENE = preload("res://scenes/HpBar.tscn")
+const HIGHLIGHT_DEPLOY = Color(0.2, 0.9, 0.3, 0.35)
+const HIGHLIGHT_MOVE = Color(0.2, 0.5, 1.0, 0.35)
+const HIGHLIGHT_ATTACK = Color(1.0, 0.2, 0.2, 0.8)
+
 
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
@@ -73,6 +76,14 @@ func _ready() -> void:
 func _draw() -> void:
 	for tile in Obstacles.TILES:
 		draw_rect(Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64)), Color(0.3, 0.3, 0.3))
+		
+	var marks = highlight_tiles()
+	for tile in marks:
+		var rect = Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64))
+		if marks[tile] == HIGHLIGHT_ATTACK:
+			draw_rect(rect, marks[tile], false, 3.0)
+		else:
+			draw_rect(rect, marks[tile])
 
 	var bluebottomcenter = GridUtils.cell_to_pixel(BASE_POSITIONS[1]) + Vector2(32, 64)
 	var bluesize = Vector2(128, 128)
@@ -380,3 +391,45 @@ func finish_game(text: String) -> void:
 	winner_label.visible = true
 	end_turn_button.disabled = true
 	queue_redraw()
+
+func highlight_tiles() -> Dictionary:
+	# {tile: color} for what the current player can do right now
+	var result = {}
+	if game_over:
+		return result
+	var player = TurnManager.current_player
+	var phase = TurnManager.get_current_phase()
+	if phase == "Deploy":
+		for tile in Deployment.get_open_deploy_tiles(BASE_POSITIONS[player], occupied_tiles()):
+			result[tile] = HIGHLIGHT_DEPLOY
+	elif selected_unit_index != -1:
+		var unit = units[selected_unit_index]
+		if phase == "Move" and not unit["moved"]:
+			for tile in reachable_tiles(unit):
+				result[tile] = HIGHLIGHT_MOVE
+		elif phase == "Act" and not unit["acted"]:
+			for tile in attack_targets(unit):
+				result[tile] = HIGHLIGHT_ATTACK
+	return result
+
+func reachable_tiles(unit: Dictionary) -> Array:
+	var tiles = []
+	var blocked = occupied_tiles()
+	var steps = MovementRange.get_movement_range(unit["type"])
+	for x in range(GridUtils.GRID_COLS):
+		for y in range(GridUtils.GRID_ROWS):
+			var tile = Vector2i(x, y)
+			if not MovementRange.find_path(unit["position"], tile, blocked, steps).is_empty():
+				tiles.append(tile)
+	return tiles
+
+func attack_targets(unit: Dictionary) -> Array:
+	var tiles = []
+	var attack_range = UnitData.get_stats(unit["type"])["range"]
+	var enemy = 1 if unit["player"] == 2 else 2
+	for other in units:
+		if other["player"] == enemy and AttackRange.can_attack(unit["position"], other["position"], attack_range):
+			tiles.append(other["position"])
+	if AttackRange.can_attack(unit["position"], BASE_POSITIONS[enemy], attack_range):
+		tiles.append(BASE_POSITIONS[enemy])
+	return tiles
