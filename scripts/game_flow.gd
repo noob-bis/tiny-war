@@ -68,7 +68,6 @@ func _ready() -> void:
 		add_child(base_bar)
 		base_bars[player] = base_bar
 
-
 func _draw() -> void:
 	for tile in Obstacles.TILES:
 		draw_rect(Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64)), Color(0.3, 0.3, 0.3))
@@ -145,7 +144,9 @@ func _on_place_unit(tile: Vector2i) -> void:
 
 func _on_player_changed(player: int) -> void:
 	turn_counter.complete_turn()
-	player_economy.give_passive_income(player, turn_counter.get_completed_turns() + 1)
+	# each player's first turn uses only the starting bank (250)
+	if turn_counter.get_completed_turns() >= 2:
+		player_economy.give_passive_income(player, turn_counter.get_completed_turns() + 1)
 
 func _on_base_destroyed(player: int) -> void:
 	var winner = 1 if player == 2 else 2
