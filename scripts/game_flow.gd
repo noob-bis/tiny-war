@@ -32,6 +32,7 @@ var game_over := false
 @onready var phase_hud = $"../CanvasLayer/Phase"
 @onready var winner_label = $"../CanvasLayer/WinnerLabel"
 @onready var picker = $"../CanvasLayer/Picker"
+
 @onready var end_turn_button = $"../CanvasLayer/EndTurnButton"
 
 # METHODS
