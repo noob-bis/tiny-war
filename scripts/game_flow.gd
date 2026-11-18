@@ -18,6 +18,7 @@ var selected_unit_index = -1
 var selected_deploy_type := "melee";
 var units: Array = []
 var base_bars: Dictionary = {}
+var game_over := false
 
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
@@ -31,6 +32,7 @@ var base_bars: Dictionary = {}
 @onready var phase_hud = $"../CanvasLayer/Phase"
 @onready var winner_label = $"../CanvasLayer/WinnerLabel"
 @onready var picker = $"../CanvasLayer/Picker"
+@onready var end_turn_button = $"../CanvasLayer/EndTurnButton"
 
 # METHODS
 
@@ -68,7 +70,6 @@ func _ready() -> void:
 		add_child(base_bar)
 		base_bars[player] = base_bar
 
-
 func _draw() -> void:
 	for tile in Obstacles.TILES:
 		draw_rect(Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64)), Color(0.3, 0.3, 0.3))
@@ -101,6 +102,8 @@ func occupied_tiles() -> Array:
 	return tiles
 
 func _on_place_unit(tile: Vector2i) -> void:
+	if game_over : return
+	
 	# figure out whose turn it is
 	var current_player = TurnManager.current_player
 
@@ -149,11 +152,11 @@ func _on_player_changed(player: int) -> void:
 
 func _on_base_destroyed(player: int) -> void:
 	var winner = 1 if player == 2 else 2
-	winner_label.text = "Player " + str(winner) + " wins!"
-	winner_label.visible = true
-	print("Player ", winner, " wins!")
+	finish_game("Player %d wins!" % winner)
 
 func _on_attack_unit(tile: Vector2i) -> void:
+	if game_over : return
+	
 	var current_player = TurnManager.current_player
 	
 	if selected_unit_index == -1:
@@ -225,6 +228,8 @@ func _on_attack_unit(tile: Vector2i) -> void:
 		print("No target here ", tile)
 
 func _on_move_unit(tile: Vector2i) -> void:
+	if game_over : return
+	
 	var current_player = TurnManager.current_player
 	
 	if selected_unit_index == -1:
@@ -345,11 +350,7 @@ func _on_turn_limit() -> void:
 	elif army_value(2) > army_value(1):
 		winner = 2
 
-	if winner == 0:
-		winner_label.text = "Draw!"
-	else:
-		winner_label.text = "Player %d wins!" % winner
-	winner_label.visible = true
+	finish_game("Draw!" if winner == 0 else "Player %d wins!" % winner)
 
 func update_bar(unit: Dictionary) -> void:
 	var bar = unit["bar"]
@@ -367,4 +368,13 @@ func update_base_bars() -> void:
 			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
 
 func end_turn() -> void:
+	if game_over : return
 	TurnManager.advance_phase()
+
+func finish_game(text: String) -> void:
+	game_over = true
+	selected_unit_index = -1
+	winner_label.text = text
+	winner_label.visible = true
+	end_turn_button.disabled = true
+	queue_redraw()
