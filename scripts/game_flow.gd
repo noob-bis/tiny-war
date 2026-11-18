@@ -135,7 +135,7 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"player": current_player,
 				"type": selected_deploy_type,
 				"position": tile,
-				"hp": 1,
+				"hp": unit["hp"],
 				"acted": false,
 				"moved": false,
 				"bar": bar
