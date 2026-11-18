@@ -19,6 +19,8 @@ const MESSAGE_TIME = 2.0
 const IMPACT_SCENE = preload("res://scenes/impact.tscn")
 const FLASH_TIME_UNIT = 0.2
 const DONE_TINT = Color(0.5, 0.5, 0.5)
+const PROJECTILE_SCENE = preload("res://scenes/projectile.tscn")
+const ARROW_SCENE = preload("res://scenes/arrow.tscn")
 
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
@@ -220,6 +222,8 @@ func _on_attack_unit(tile: Vector2i) -> void:
 				var enemy_base = blue_base if other_player == 1 else red_base
 				units[i]["acted"] = true
 				enemy_base.take_damage(UnitData.get_stats(units[i]["type"])["atk"])
+				if units[i]["type"] == "ranged":
+					shoot(units[i]["position"], tile)
 				selected_unit_index = -1
 				queue_redraw()
 				return
@@ -237,6 +241,8 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					units[attacker_index]["acted"] = true
 					units[i]["hp"] -= damage
 					flash_unit(units[i])
+					if attacker_type == "ranged":
+						shoot(units[attacker_index]["position"], tile)
 
 					if units[i]["hp"] <= 0:
 						var bonus = player_economy.get_kill_bonus(units[i]["type"])
@@ -478,3 +484,12 @@ func is_done(unit: Dictionary) -> bool:
 		return false
 	var phase = TurnManager.get_current_phase()
 	return (phase == "Move" and unit["moved"]) or (phase == "Act" and unit["acted"])
+
+func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
+	var projectile = ARROW_SCENE.instantiate()
+	add_child(projectile)
+	projectile.z_index = 5
+	var center = Vector2(32, 32)
+	var from_pos = to_global(GridUtils.cell_to_pixel(from_tile) + center)
+	var to_pos = to_global(GridUtils.cell_to_pixel(to_tile) + center)
+	projectile.fire(from_pos, to_pos)

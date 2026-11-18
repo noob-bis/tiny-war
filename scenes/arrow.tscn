@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://dxyulw1p53yox"]
+
+[ext_resource type="Script" uid="uid://dqka7sru77bxe" path="res://scripts/projectile.gd" id="1_23jat"]
+[ext_resource type="Texture2D" uid="uid://fk5u7shxxvyv" path="res://assets/Projectiles/Arrow.png" id="2_q8ifc"]
+
+[node name="Arrow" type="Node2D" unique_id=523631305]
+script = ExtResource("1_23jat")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=549650136]
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_q8ifc")
