@@ -17,7 +17,9 @@ func fire(from_pos: Vector2, to_pos: Vector2) -> void:
 	global_position = from_pos
 
 	# Start the fireball animation.
-	$AnimatedSprite2D.play("fireball")
+	if has_node("AnimatedSprite2D"):
+		$AnimatedSprite2D.play("fireball")
+
 
 	# Rotate the projectile to face the target.
 	look_at(to_pos)
