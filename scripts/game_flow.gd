@@ -117,7 +117,7 @@ func _draw() -> void:
 		var tint = DONE_TINT if is_done(unit) else Color.WHITE
 		if unit.get("flash", false):
 			tint = Color(1, 0.3, 0.3)
-		draw_texture_rect(texture, Rect2(pos, size), false)
+		draw_texture_rect(texture, Rect2(pos, size), false, tint)
 		
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
