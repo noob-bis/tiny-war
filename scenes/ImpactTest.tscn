@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://4fdr5q6od54f"]
+
+[ext_resource type="Script" uid="uid://7ep0sfl5ryie" path="res://scripts/impact_test.gd" id="1_lvqvt"]
+[ext_resource type="PackedScene" uid="uid://b4k3aqcptjccv" path="res://scenes/impact.tscn" id="1_nqvux"]
+
+[node name="ImpactTest" type="Node2D" unique_id=218629521]
+position = Vector2(100, 405)
+script = ExtResource("1_lvqvt")
+
+[node name="TestSquare" type="ColorRect" parent="." unique_id=253804978]
+offset_left = 300.0
+offset_top = 250.0
+offset_right = 400.0
+offset_bottom = 350.0
+
+[node name="Impact" parent="." unique_id=1324605512 instance=ExtResource("1_nqvux")]
