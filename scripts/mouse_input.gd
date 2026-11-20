@@ -6,6 +6,7 @@ extends Node2D
 signal place_unit(tile)
 signal move_unit(tile)
 signal attack_unit(tile)
+signal command(tile)
 
 # The game board has 12 columns and 8 rows.
 var tile_size = 64
@@ -40,17 +41,5 @@ func _input(event):
 			# Check the current game phase.
 			var phase = TurnManager.get_current_phase()
 
-			# Deploy phase: choose where to place a unit.
-			if phase == "Deploy":
-				print("Place unit at: ", tile)
-				place_unit.emit(tile)
-				
-			# Move phase: Move a unit
-			if phase == "Move":
-				print("Move unit to: ", tile)
-				move_unit.emit(tile)
-
-			# Act phase: choose where to attack.
-			elif phase == "Act":
-				print("Attack unit at: ", tile)
-				attack_unit.emit(tile)
+			if TurnManager.get_current_phase() == "Command":
+				command.emit(tile)

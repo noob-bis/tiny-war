@@ -1,9 +1,9 @@
 extends Node
 
 const UNIT_STATS = {
-	"melee": {"hp": 100, "atk": 25, "move": 3, "range": 1, "cost": 100},
-	"ranged": {"hp": 60, "atk": 20, "move": 2, "range": 3, "cost": 120},
-	"tank": {"hp": 160, "atk": 20, "move": 1, "range": 1, "cost": 150},
+	"melee": {"hp": 50, "atk": 25, "move": 2, "range": 1, "cost": 100},
+	"ranged": {"hp": 40, "atk": 25, "move": 2, "range": 3, "cost": 120},
+	"tank": {"hp": 75, "atk": 20, "move": 2, "range": 1, "cost": 150},
 }
 
 # to get units data

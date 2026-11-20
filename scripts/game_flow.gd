@@ -2,8 +2,9 @@ extends Node2D
 
 const MAX_UNITS_PER_PLAYER = 6
 const BASE_POSITIONS = {
-	1: Vector2i(1, 1),
-	2: Vector2i(10,6),}
+	1: Vector2i(2, 2),
+	2: Vector2i(9, 5),
+}
 const SKINS = {
 	"1_melee": preload("res://assets/Units/Blue/Melee/Melee.png"),
 	"2_melee": preload("res://assets/Units/Red/Melee/Melee.png"),
@@ -21,6 +22,18 @@ const FLASH_TIME_UNIT = 0.2
 const DONE_TINT = Color(0.5, 0.5, 0.5)
 const PROJECTILE_SCENE = preload("res://scenes/projectile.tscn")
 const ARROW_SCENE = preload("res://scenes/arrow.tscn")
+const MINE_TILES = [Vector2i(5, 3), Vector2i(6, 4)]
+const MINE_INCOME = 30
+const MINE_COLOR = Color(1.0, 0.85, 0.2, 0.45)
+func pay_mines(player: int) -> void:
+	var count = 0
+	for unit in units:
+		if unit["player"] == player and unit["position"] in MINE_TILES:
+			count += 1
+	if count > 0:
+		player_economy.add_coins(player, count * MINE_INCOME)
+		show_message("Gold mine: +%d coins" % (count * MINE_INCOME))
+
 
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
@@ -88,11 +101,17 @@ func _ready() -> void:
 		base_effects[player] = effect
 	blue_base.damage_state_changed.connect(_on_base_state_changed)
 	red_base.damage_state_changed.connect(_on_base_state_changed)
+	
+	mouse_input.command.connect(_on_command)
 
 func _draw() -> void:
 	for tile in Obstacles.TILES:
 		draw_rect(Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64)), Color(0.3, 0.3, 0.3))
-		
+	
+	for tile in MINE_TILES:
+		draw_rect(Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64)), MINE_COLOR)
+
+	
 	var marks = highlight_tiles()
 	for tile in marks:
 		var rect = Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64))
@@ -124,7 +143,6 @@ func _draw() -> void:
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
 			draw_rect(Rect2(pos, Vector2(64, 64)), Color.YELLOW, false, 3.0)
-			
 
 func occupied_tiles() -> Array:
 	var tiles = BASE_POSITIONS.values() + Obstacles.TILES
@@ -170,8 +188,8 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"type": selected_deploy_type,
 				"position": tile,
 				"hp": unit["hp"],
-				"acted": false,
-				"moved": false,
+				"acted": true,
+				"moved": true,
 				"bar": bar
 			})
 
@@ -312,7 +330,6 @@ func _on_move_unit(tile: Vector2i) -> void:
 		mover["moved"] = true
 
 		print("Move unit to ", tile)
-		selected_unit_index = -1
 		queue_redraw()
 
 func _on_phase_changed(player: int, phase: String) -> void:
@@ -324,13 +341,12 @@ func _on_phase_changed(player: int, phase: String) -> void:
 			if unit["player"] == player:
 				unit["acted"] = false
 				unit["moved"] = false
+		pay_mines(player)
 
 	if phase == "End":
 		apply_base_damage(player)
 	
 	if phase == "Income" or phase == "End":
-		TurnManager.advance_phase()
-	elif (phase == "Move" or phase == "Act") and count_total_units(player) == 0:
 		TurnManager.advance_phase()
 
 func count_total_units(player: int) -> int:
@@ -424,15 +440,16 @@ func highlight_tiles() -> Dictionary:
 		return result
 	var player = TurnManager.current_player
 	var phase = TurnManager.get_current_phase()
-	if phase == "Deploy":
-		for tile in Deployment.get_open_deploy_tiles(BASE_POSITIONS[player], occupied_tiles()):
-			result[tile] = HIGHLIGHT_DEPLOY
-	elif selected_unit_index != -1:
+	if phase != "Command":
+		return result
+	for tile in Deployment.get_open_deploy_tiles(BASE_POSITIONS[player], occupied_tiles()):
+		result[tile] = HIGHLIGHT_DEPLOY
+	if selected_unit_index != -1:
 		var unit = units[selected_unit_index]
-		if phase == "Move" and not unit["moved"]:
+		if not unit["moved"]:
 			for tile in reachable_tiles(unit):
 				result[tile] = HIGHLIGHT_MOVE
-		elif phase == "Act" and not unit["acted"]:
+		if not unit["acted"]:
 			for tile in attack_targets(unit):
 				result[tile] = HIGHLIGHT_ATTACK
 	return result
@@ -483,7 +500,7 @@ func is_done(unit: Dictionary) -> bool:
 	if unit["player"] != TurnManager.current_player:
 		return false
 	var phase = TurnManager.get_current_phase()
-	return (phase == "Move" and unit["moved"]) or (phase == "Act" and unit["acted"])
+	return unit["moved"] and unit["acted"]
 
 func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
 	var projectile = ARROW_SCENE.instantiate()
@@ -493,3 +510,30 @@ func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
 	var from_pos = to_global(GridUtils.cell_to_pixel(from_tile) + center)
 	var to_pos = to_global(GridUtils.cell_to_pixel(to_tile) + center)
 	projectile.fire(from_pos, to_pos)
+
+func _on_command(tile: Vector2i) -> void:
+	if game_over:
+		return
+	var player = TurnManager.current_player
+	# 1. your own unit: select it
+	for i in range(units.size()):
+		if units[i]["position"] == tile and units[i]["player"] == player:
+			selected_unit_index = i
+			queue_redraw()
+			return
+	# 2-3. a unit is selected: attack or move
+	if selected_unit_index != -1:
+		var unit = units[selected_unit_index]
+		if not unit["acted"] and tile in attack_targets(unit):
+			_on_attack_unit(tile)
+			return
+		if not unit["moved"] and tile in reachable_tiles(unit):
+			_on_move_unit(tile)
+			return
+	# 4. next to your base: deploy
+	if tile in Deployment.get_adjacent_tiles(BASE_POSITIONS[player]):
+		_on_place_unit(tile)
+		return
+	# 5. anything else: deselect
+	selected_unit_index = -1
+	queue_redraw()

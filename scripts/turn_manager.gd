@@ -5,18 +5,16 @@ signal phase_changed(player, phase)
 signal player_changed(player)
 
 # Five phases in order.
-const PHASES = ["Income", "Move", "Act", "Deploy", "End"]
+const PHASES = ["Income", "Command", "End"]
 
 # Current player and phase.
 var current_player = 1
 var current_phase_index = 0
 var match_started = false
 
-
 # Get the current phase name.
 func get_current_phase():
 	return PHASES[current_phase_index]
-
 
 # Start the match after the coin flip.
 func start_match(starting_player):
@@ -36,13 +34,12 @@ func start_match(starting_player):
 
 	print_status()
 
-
 # Move to the next phase.
 func advance_phase():
 	if not match_started:
 		return
 
-	if current_phase_index == 4:
+	if current_phase_index == PHASES.size() - 1:
 		# Return to Income
 		current_phase_index = 0
 
@@ -58,7 +55,6 @@ func advance_phase():
 
 	print_status()
 	phase_changed.emit(current_player, get_current_phase())
-
 
 # Print the current player and phase.
 func print_status():
