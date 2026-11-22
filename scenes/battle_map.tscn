@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://fyx8lhryhvmx" path="res://scripts/battle_grid.gd" id="2_7eff0"]
 [ext_resource type="Script" uid="uid://ck4c1irgocv58" path="res://scripts/base_destroy.gd" id="3_jx2v5"]
 [ext_resource type="Texture2D" uid="uid://c3bl6x8u1u7rn" path="res://assets/Terrain/Resources/Wood/Trees/Tree1.png" id="5_admde"]
+[ext_resource type="Texture2D" uid="uid://bcag3ak5dychb" path="res://assets/Terrain/Decorations/Rocks in the Water/Water Rocks_04.png" id="6_0xsog"]
 [ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
 [ext_resource type="Script" uid="uid://duncda31sr452" path="res://scripts/mouse_input.gd" id="8_0xsog"]
 [ext_resource type="Script" uid="uid://raguym0b6mv3" path="res://scripts/player_economy.gd" id="9_jx2v5"]
@@ -69,6 +70,10 @@ region = Rect2(596.19495, 27.2, 161.17407, 228.8)
 [sub_resource type="AtlasTexture" id="AtlasTexture_tdoib"]
 atlas = ExtResource("6_v42vf")
 region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jx2v5"]
+atlas = ExtResource("6_0xsog")
+region = Rect2(509.89594, 0, 67.20001, 64)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a37hb"]
 bg_color = Color(0.12553534, 0.12553534, 0.12553528, 1)
@@ -274,6 +279,13 @@ offset_right = 1057.0
 offset_bottom = 422.0
 texture = SubResource("AtlasTexture_tdoib")
 metadata/_edit_use_anchors_ = true
+
+[node name="WaterRock" type="TextureRect" parent="Decoration" unique_id=1221890349]
+offset_left = 1021.0
+offset_top = -95.0
+offset_right = 1088.0
+offset_bottom = -31.0
+texture = SubResource("AtlasTexture_jx2v5")
 
 [node name="MouseInput" type="Node2D" parent="." unique_id=855416727]
 script = ExtResource("8_0xsog")

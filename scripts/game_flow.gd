@@ -25,6 +25,14 @@ const BASE_TEXTURES = {
 	1: preload("res://assets/Buildings/Blue Buildings/Barracks.png"),
 	2: preload("res://assets/Buildings/Black Buildings/Barracks.png"),}
 const BASE_SIZE = Vector2(128, 171)
+const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
+const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
+const BUSH = preload("res://assets/Terrain/Decorations/Bushes/Bushe3.png")
+const OBSTACLE_ART = [
+	{"texture": ROCK_BIG, "size": Vector2(80, 80), "shift": Vector2(0, 0)},
+	{"texture": BUSH, "size": Vector2(116, 116), "shift": Vector2(0, 8)},
+	{"texture": ROCK_SMALL, "size": Vector2(80, 80), "shift": Vector2(0, 0)},
+	{"texture": BUSH, "size": Vector2(116, 116), "shift": Vector2(0, 8)},]
 
 
 var selected_unit_index = -1
@@ -92,8 +100,13 @@ func _ready() -> void:
 	red_base.damage_state_changed.connect(_on_base_state_changed)
 
 func _draw() -> void:
-	for tile in Obstacles.TILES:
-		draw_rect(Rect2(GridUtils.cell_to_pixel(tile), Vector2(64, 64)), Color(0.3, 0.3, 0.3))
+	for i in Obstacles.TILES.size():
+		var art = OBSTACLE_ART[i % OBSTACLE_ART.size()]
+		var center = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + art["shift"]
+		var target = Rect2(center - art["size"] / 2, art["size"])
+		var frame_size = art["texture"].get_height() # the first frame is a square
+		draw_texture_rect_region(art["texture"], target, Rect2(0, 0, frame_size, frame_size))
+
 		
 	var marks = highlight_tiles()
 	for tile in marks:
