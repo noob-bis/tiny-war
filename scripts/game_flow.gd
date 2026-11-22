@@ -2,8 +2,8 @@ extends Node2D
 
 const MAX_UNITS_PER_PLAYER = 6
 const BASE_POSITIONS = {
-	1: Vector2i(1, 1),
-	2: Vector2i(10,6),}
+	1: Vector2i(0, 0),
+	2: Vector2i(10, 6),}
 const SKINS = {
 	"1_melee": preload("res://assets/Units/Blue/Melee/Melee.png"),
 	"2_melee": preload("res://assets/Units/Red/Melee/Melee.png"),
@@ -46,7 +46,6 @@ var base_effects: Dictionary = {}
 @onready var message_label = $"../CanvasLayer/Message"
 
 # METHODS
-
 func _process(_delta: float) -> void:
 	update_hud()
 	for unit in units:
@@ -84,7 +83,7 @@ func _ready() -> void:
 	for player in BASE_POSITIONS:
 		var effect = IMPACT_SCENE.instantiate()
 		add_child(effect)
-		effect.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(32, 0)
+		effect.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64, 40)
 		base_effects[player] = effect
 	blue_base.damage_state_changed.connect(_on_base_state_changed)
 	red_base.damage_state_changed.connect(_on_base_state_changed)
@@ -101,15 +100,9 @@ func _draw() -> void:
 		else:
 			draw_rect(rect, marks[tile])
 
-	var bluebottomcenter = GridUtils.cell_to_pixel(BASE_POSITIONS[1]) + Vector2(32, 64)
-	var bluesize = Vector2(128, 128)
-	var bluepos = bluebottomcenter - Vector2(bluesize.x / 2, bluesize.y)
-	draw_texture_rect(monk_blue_texture, Rect2(bluepos, Vector2(128,128)), false)
-	
-	var redbottomcenter = GridUtils.cell_to_pixel(BASE_POSITIONS[2]) + Vector2(32, 64)
-	var redsize = Vector2(128, 128)
-	var redpos = redbottomcenter - Vector2(redsize.x / 2, redsize.y)
-	draw_texture_rect(monk_red_texture, Rect2(redpos, Vector2(128,128)), false)
+	for player in BASE_POSITIONS:
+		var base_texture = monk_blue_texture if player == 1 else monk_red_texture
+		draw_texture_rect(base_texture, Rect2(GridUtils.cell_to_pixel(BASE_POSITIONS[player]), Vector2(128, 128)), false)
 	
 	for unit in units:
 		var texture = SKINS["%d_%s" % [unit["player"], unit["type"]]]
@@ -124,10 +117,9 @@ func _draw() -> void:
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
 			draw_rect(Rect2(pos, Vector2(64, 64)), Color.YELLOW, false, 3.0)
-			
 
 func occupied_tiles() -> Array:
-	var tiles = BASE_POSITIONS.values() + Obstacles.TILES
+	var tiles = base_tiles(1) + base_tiles(2) + Obstacles.TILES
 	for unit in units:
 		tiles.append(unit["position"])
 	return tiles
@@ -139,8 +131,7 @@ func _on_place_unit(tile: Vector2i) -> void:
 	var current_player = TurnManager.current_player
 
 	# look up that player's base position
-	var base_position = BASE_POSITIONS[current_player]
-	var deploy_zone = Deployment.get_adjacent_tiles(base_position)
+	var deploy_zone = base_deploy_tiles(current_player)
 
 	# if clicked tile is not in that list
 	if tile not in deploy_zone:
@@ -216,9 +207,9 @@ func _on_attack_unit(tile: Vector2i) -> void:
 
 		var other_player = 1 if current_player == 2 else 2
 		
-		if tile == BASE_POSITIONS[other_player]:
+		if tile in base_tiles(other_player):
 			var i = selected_unit_index
-			if AttackRange.can_attack(units[i]["position"], tile, UnitData.get_stats(units[i]["type"])["range"]):
+			if base_in_range(units[i]["position"], other_player, UnitData.get_stats(units[i]["type"])["range"]):
 				var enemy_base = blue_base if other_player == 1 else red_base
 				units[i]["acted"] = true
 				enemy_base.take_damage(UnitData.get_stats(units[i]["type"])["atk"])
@@ -361,7 +352,8 @@ func apply_base_damage(player: int) -> void:
 	var survivors = []
 	for unit in units:
 		if unit["player"] == player:
-			unit["hp"] -= BaseAttack.get_base_attack_damage(BASE_POSITIONS[enemy], unit["position"], true)
+			if unit["position"] in base_deploy_tiles(enemy):
+				unit["hp"] -= BaseAttack.BASE_DAMAGE
 			if unit["hp"] <= 0:
 				unit["bar"].queue_free()
 				continue
@@ -401,7 +393,7 @@ func update_base_bars() -> void:
 	for player in base_bars:
 		var base = blue_base if player == 1 else red_base
 		var bar = base_bars[player]
-		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(8, -30)
+		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(40, -12)
 		if bar.current_hp != base.base_hp:
 			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
 
@@ -425,8 +417,10 @@ func highlight_tiles() -> Dictionary:
 	var player = TurnManager.current_player
 	var phase = TurnManager.get_current_phase()
 	if phase == "Deploy":
-		for tile in Deployment.get_open_deploy_tiles(BASE_POSITIONS[player], occupied_tiles()):
-			result[tile] = HIGHLIGHT_DEPLOY
+		var taken = occupied_tiles()
+		for tile in base_deploy_tiles(player):
+			if tile not in taken:
+				result[tile] = HIGHLIGHT_DEPLOY
 	elif selected_unit_index != -1:
 		var unit = units[selected_unit_index]
 		if phase == "Move" and not unit["moved"]:
@@ -455,8 +449,8 @@ func attack_targets(unit: Dictionary) -> Array:
 	for other in units:
 		if other["player"] == enemy and AttackRange.can_attack(unit["position"], other["position"], attack_range):
 			tiles.append(other["position"])
-	if AttackRange.can_attack(unit["position"], BASE_POSITIONS[enemy], attack_range):
-		tiles.append(BASE_POSITIONS[enemy])
+	if base_in_range(unit["position"], enemy, attack_range):
+		tiles += base_tiles(enemy)
 	return tiles
 
 func show_message(text: String) -> void:
@@ -493,3 +487,24 @@ func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
 	var from_pos = to_global(GridUtils.cell_to_pixel(from_tile) + center)
 	var to_pos = to_global(GridUtils.cell_to_pixel(to_tile) + center)
 	projectile.fire(from_pos, to_pos)
+
+func base_tiles(player: int) -> Array:
+	# the base covers a 2x2 block, BASE_POSITIONS is its top-left tile
+	var corner = BASE_POSITIONS[player]
+	return [corner, corner + Vector2i(1, 0), corner + Vector2i(0, 1), corner + Vector2i(1, 1)]
+
+func base_deploy_tiles(player: int) -> Array:
+	# every tile on the board that touches the base block
+	var block = base_tiles(player)
+	var result = []
+	for tile in block:
+		for next in Deployment.get_adjacent_tiles(tile):
+			if GridUtils.is_cell_inside(next) and next not in block and next not in result:
+				result.append(next)
+	return result
+
+func base_in_range(from_tile: Vector2i, player: int, attack_range: int) -> bool:
+	for tile in base_tiles(player):
+		if AttackRange.can_attack(from_tile, tile, attack_range):
+			return true
+	return false
