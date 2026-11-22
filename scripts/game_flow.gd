@@ -21,6 +21,11 @@ const FLASH_TIME_UNIT = 0.2
 const DONE_TINT = Color(0.5, 0.5, 0.5)
 const PROJECTILE_SCENE = preload("res://scenes/projectile.tscn")
 const ARROW_SCENE = preload("res://scenes/arrow.tscn")
+const BASE_TEXTURES = {
+	1: preload("res://assets/Buildings/Blue Buildings/Barracks.png"),
+	2: preload("res://assets/Buildings/Black Buildings/Barracks.png"),}
+const BASE_SIZE = Vector2(128, 171)
+
 
 var selected_unit_index = -1
 var selected_deploy_type := "melee";
@@ -35,8 +40,6 @@ var base_effects: Dictionary = {}
 @onready var turn_counter = $"../TurnCounter"
 @onready var blue_base = $"../BlueBase"
 @onready var red_base = $"../RedBase"
-@onready var monk_blue_texture = preload("res://assets/Units/Blue/Monk/Monk.png")
-@onready var monk_red_texture = preload("res://assets/Units/Red/Monk/Monk.png")
 @onready var player1_hud = $"../CanvasLayer/Player1HUD"
 @onready var player2_hud = $"../CanvasLayer/Player2HUD"
 @onready var phase_hud = $"../CanvasLayer/Phase"
@@ -98,11 +101,15 @@ func _draw() -> void:
 		if marks[tile] == HIGHLIGHT_ATTACK:
 			draw_rect(rect, marks[tile], false, 3.0)
 		else:
-			draw_rect(rect, marks[tile])
+			draw_rect(rect.grow(-2), marks[tile])
+
 
 	for player in BASE_POSITIONS:
-		var base_texture = monk_blue_texture if player == 1 else monk_red_texture
-		draw_texture_rect(base_texture, Rect2(GridUtils.cell_to_pixel(BASE_POSITIONS[player]), Vector2(128, 128)), false)
+		var block_bottom_center = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64, 128)
+		var base_pos = block_bottom_center - Vector2(BASE_SIZE.x / 2, BASE_SIZE.y)
+		draw_texture_rect(BASE_TEXTURES[player], Rect2(base_pos, BASE_SIZE), false)
+
+
 	
 	for unit in units:
 		var texture = SKINS["%d_%s" % [unit["player"], unit["type"]]]
