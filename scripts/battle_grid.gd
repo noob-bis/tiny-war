@@ -1,33 +1,34 @@
 extends Node2D
 
-# godot calls this automatically on every input event
-# we check "was this a left click?"
-# if so -> get the mouse's pixel position and convert it back to a cell address.
-# and if that cell is on the board -> print it
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var pos = get_local_mouse_position()
-		var cell = Vector2i(pos.x / GridUtils.TILE_SIZE, pos.y / GridUtils.TILE_SIZE)
-		#if GridUtils.is_cell_inside(cell):
-			#print(cell)
+const NO_TILE = Vector2i(-1, -1)
+const CURSOR_TEXTURE = preload("res://assets/UI Elements/UI Elements/Cursors/Cursor_04.png")
+
+var hovered_tile := NO_TILE
+
+@onready var game_flow = $"../GameFlow"
+
+func _ready() -> void:
+	z_index = 11 # above GameFlow (10)
+
+# the board has no lines, only the tile under the mouse is outlined
+func _process(_delta: float) -> void:
+	var pos = get_local_mouse_position()
+	var tile = Vector2i((pos / GridUtils.TILE_SIZE).floor())
+	if not GridUtils.is_cell_inside(tile):
+		tile = NO_TILE
+	if tile != hovered_tile:
+		hovered_tile = tile
+		queue_redraw()
 
 func _draw() -> void:
-	# vertical lines
-	for x in range(GridUtils.GRID_COLS + 1):
-		var x_pos = x * GridUtils.TILE_SIZE
-		draw_line(
-			Vector2(x_pos, 0),
-			Vector2(x_pos, GridUtils.GRID_ROWS * GridUtils.TILE_SIZE),
-			Color(1, 1, 1, 0.6),
-			1.5
-		)
+	if hovered_tile == NO_TILE:
+		return
+	draw_texture_rect(CURSOR_TEXTURE, hover_rect(), false)
 
-	# horizontal lines
-	for y in range(GridUtils.GRID_ROWS + 1):
-		var y_pos = y * GridUtils.TILE_SIZE
-		draw_line(
-			Vector2(0, y_pos),
-			Vector2(GridUtils.GRID_COLS * GridUtils.TILE_SIZE, y_pos),
-			Color(1, 1, 1, 0.6),
-			1.5
-		)
+# the tile under the mouse, or the whole 2x2 block when the mouse is on a base
+func hover_rect() -> Rect2:
+	var tile_size = Vector2(GridUtils.TILE_SIZE, GridUtils.TILE_SIZE)
+	for player in game_flow.BASE_POSITIONS:
+		if hovered_tile in game_flow.base_tiles(player):
+			return Rect2(GridUtils.cell_to_pixel(game_flow.BASE_POSITIONS[player]), tile_size * 2)
+	return Rect2(GridUtils.cell_to_pixel(hovered_tile), tile_size)
