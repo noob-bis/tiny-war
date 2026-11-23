@@ -36,6 +36,24 @@ const INACTIVE_TINT = Color(0.6, 0.6, 0.6)
 const RIBBON_TEXTURES = {
 	1: preload("res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Blue.png"),
 	2: preload("res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Red.png"),}
+const UNIT_SCENE = preload("res://scenes/unit.tscn")
+const UNIT_FRAMES = {
+	"1_melee": preload("res://assets/Units/blue_melee_frames.tres"),
+	"2_melee": preload("res://assets/Units/red_melee_frames.tres"),
+	"1_ranged": preload("res://assets/Units/blue_ranged_frames.tres"),
+	"2_ranged": preload("res://assets/Units/red_ranged_frames.tres"),
+	"1_tank": preload("res://assets/Units/blue_tank_frames.tres"),
+	"2_tank": preload("res://assets/Units/red_tank_frames.tres"),}
+
+const UNIT_LOOK = {
+	"1_melee": {"scale": 0.68, "y": 28, "x": 0},
+	"1_ranged": {"scale": 0.88, "y": 21, "x": 0},
+	"1_tank": {"scale": 0.88, "y": 21, "x": 0},
+	"2_melee": {"scale": 1.0, "y": 20, "x": 0},
+	"2_ranged": {"scale": 0.88, "y": 19, "x": -12},
+	"2_tank": {"scale": 0.68, "y": 17, "x": -13},}
+
+
 const BASE_SIZE = Vector2(128, 171)
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
 const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
@@ -73,6 +91,7 @@ func _process(_delta: float) -> void:
 	update_hud()
 	for unit in units:
 		update_bar(unit)
+		update_sprite(unit)
 	update_base_bars()
 
 func _ready() -> void:
@@ -134,18 +153,6 @@ func _draw() -> void:
 		var block_bottom_center = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64, 128)
 		var base_pos = block_bottom_center - Vector2(BASE_SIZE.x / 2, BASE_SIZE.y)
 		draw_texture_rect(BASE_TEXTURES[player], Rect2(base_pos, BASE_SIZE), false)
-
-
-	
-	for unit in units:
-		var texture = SKINS["%d_%s" % [unit["player"], unit["type"]]]
-		var tile_bottom_center = GridUtils.cell_to_pixel(unit["position"]) + Vector2(32, 64)
-		var size = Vector2(128, 128)
-		var pos = tile_bottom_center - Vector2(size.x / 2, size.y)
-		var tint = DONE_TINT if is_done(unit) else Color.WHITE
-		if unit.get("flash", false):
-			tint = Color(1, 0.3, 0.3)
-		draw_texture_rect(texture, Rect2(pos, size), false, tint)
 		
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
@@ -188,6 +195,7 @@ func _on_place_unit(tile: Vector2i) -> void:
 			return
 		else:
 			var bar = HP_BAR_SCENE.instantiate()
+			bar.z_index = 1 # above the unit picture
 			add_child(bar)
 			units.append({
 				"player": current_player,
@@ -196,7 +204,8 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"hp": unit["hp"],
 				"acted": false,
 				"moved": false,
-				"bar": bar
+				"bar": bar,
+				"sprite": make_sprite(current_player, selected_deploy_type, tile),
 			})
 
 			queue_redraw() # to make the cicle appear
@@ -274,6 +283,7 @@ func _on_attack_unit(tile: Vector2i) -> void:
 						var bonus = player_economy.get_kill_bonus(units[i]["type"])
 						player_economy.add_coins(current_player, bonus)
 						units[i]["bar"].queue_free()
+						units[i]["sprite"].queue_free()
 						units.erase(units[i])
 						print("Dealt damage, Unit removed")
 						selected_unit_index = -1
@@ -336,6 +346,8 @@ func _on_move_unit(tile: Vector2i) -> void:
 
 		mover["position"] = tile
 		mover["moved"] = true
+		mover["sprite"].position = sprite_position(mover["player"], mover["type"], tile)
+
 
 		print("Move unit to ", tile)
 		selected_unit_index = -1
@@ -393,6 +405,7 @@ func apply_base_damage(player: int) -> void:
 				base_shoot(enemy, unit)
 			if unit["hp"] <= 0:
 				unit["bar"].queue_free()
+				unit["sprite"].queue_free()
 				continue
 		survivors.append(unit)
 	units = survivors
@@ -421,10 +434,12 @@ func _on_turn_limit() -> void:
 
 func update_bar(unit: Dictionary) -> void:
 	var bar = unit["bar"]
-	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(4, -6)
+	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(4, 50)
 	var max_hp = UnitData.get_stats(unit["type"])["hp"]
 	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
 		bar.set_hp(unit["hp"], max_hp)
+	bar.visible = unit["hp"] < max_hp # full-health units show no bar
+
 
 func update_base_bars() -> void:
 	for player in base_bars:
@@ -575,3 +590,26 @@ func update_buttons(player: int) -> void:
 
 	var ribbon = phase_hud.get_theme_stylebox("normal") as StyleBoxTexture
 	ribbon.texture = RIBBON_TEXTURES[player]
+
+func make_sprite(player: int, type: String, tile: Vector2i) -> AnimatedSprite2D:
+	var key = "%d_%s" % [player, type]
+	var sprite = UNIT_SCENE.instantiate()
+	sprite.sprite_frames = UNIT_FRAMES[key]
+	sprite.scale = Vector2.ONE * UNIT_LOOK[key]["scale"]
+	sprite.offset.x = UNIT_LOOK[key]["x"] # some monsters are not in the middle of their frame
+	sprite.flip_h = player == 2 # red units look left, toward the blue base
+	add_child(sprite)
+	sprite.position = sprite_position(player, type, tile)
+	sprite.play("idle")
+	sprite.frame = randi() % sprite.sprite_frames.get_frame_count("idle")
+	return sprite
+
+func sprite_position(player: int, type: String, tile: Vector2i) -> Vector2:
+	return GridUtils.cell_to_pixel(tile) + Vector2(32, UNIT_LOOK["%d_%s" % [player, type]]["y"])
+
+func update_sprite(unit: Dictionary) -> void:
+	# grey when done, red for a moment when hit
+	var tint = DONE_TINT if is_done(unit) else Color.WHITE
+	if unit.get("flash", false):
+		tint = Color(1, 0.3, 0.3)
+	unit["sprite"].modulate = tint
