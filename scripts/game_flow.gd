@@ -21,9 +21,6 @@ const FLASH_TIME_UNIT = 0.2
 const DONE_TINT = Color(0.5, 0.5, 0.5)
 const PROJECTILE_SCENE = preload("res://scenes/projectile.tscn")
 const ARROW_SCENE = preload("res://scenes/arrow.tscn")
-const BASE_TEXTURES = {
-	1: preload("res://assets/Buildings/Blue Buildings/Barracks.png"),
-	2: preload("res://assets/Buildings/Black Buildings/Barracks.png"),}
 const BUTTON_THEMES = {
 	1: preload("res://assets/ui_blue.tres"),
 	2: preload("res://assets/ui_red.tres"),}
@@ -61,8 +58,14 @@ const ARROW_SPEED = 600.0 # same as projectile.gd
 const DEATH_TIME = 0.5
 const FIREBALL_TIME = 0.4 # about how long the base fireball flies
 const AVATAR_CROP = Rect2(24, 24, 208, 208) # the avatars have empty space around the face
+const OBSTACLE_FRAME_MS = 150 # a new bush frame every 0.15 s
 
-const BASE_SIZE = Vector2(128, 171)
+const BASE_LOOK = {
+	1: {"texture": preload("res://assets/Buildings/Blue Buildings/Barracks.png"), "frames": 1, "scale": 0.667, "drop": 0},
+	2: {"texture": preload("res://assets/Buildings/Red Buildings/Goblin Hut.png"), "frames": 16, "scale": 0.9, "drop": 13},}
+const BASE_FRAME_MS = 100
+
+
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
 const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
 const BUSH = preload("res://assets/Terrain/Decorations/Bushes/Bushe3.png")
@@ -80,6 +83,10 @@ var base_bars: Dictionary = {}
 var game_over := false
 var message_timer: SceneTreeTimer
 var base_effects: Dictionary = {}
+var obstacle_sprites: Array = []
+var base_sprites: Dictionary = {}
+
+
 
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
@@ -96,11 +103,19 @@ var base_effects: Dictionary = {}
 
 # METHODS
 func _process(_delta: float) -> void:
+	for i in obstacle_sprites.size():
+		var sprite = obstacle_sprites[i]
+		sprite.frame = (Time.get_ticks_msec() / OBSTACLE_FRAME_MS + i * 3) % sprite.hframes
+
 	update_hud()
 	for unit in units:
 		update_bar(unit)
 		update_sprite(unit)
 	update_base_bars()
+	for player in base_sprites:
+		var base = base_sprites[player]
+		base.frame = (Time.get_ticks_msec() / BASE_FRAME_MS) % base.hframes
+
 
 func _ready() -> void:
 	z_index = 10
@@ -118,7 +133,10 @@ func _ready() -> void:
 	
 	var grid = get_parent().get_node("BattleGrid")
 	position = grid.position
-	
+	make_obstacles()
+	make_bases()
+
+
 	for button in picker.get_children():
 		button.pressed.connect(_on_pick.bind(String(button.name)))
 		add_cost(button, UnitData.get_stats(String(button.name))["cost"])
@@ -140,13 +158,7 @@ func _ready() -> void:
 	red_base.damage_state_changed.connect(_on_base_state_changed)
 
 func _draw() -> void:
-	for i in Obstacles.TILES.size():
-		var art = OBSTACLE_ART[i % OBSTACLE_ART.size()]
-		var center = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + art["shift"]
-		var target = Rect2(center - art["size"] / 2, art["size"])
-		var frame_size = art["texture"].get_height() # the first frame is a square
-		draw_texture_rect_region(art["texture"], target, Rect2(0, 0, frame_size, frame_size))
-
+		
 		
 	var marks = highlight_tiles()
 	for tile in marks:
@@ -156,11 +168,6 @@ func _draw() -> void:
 		else:
 			draw_rect(rect.grow(-2), marks[tile])
 
-
-	for player in BASE_POSITIONS:
-		var block_bottom_center = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64, 128)
-		var base_pos = block_bottom_center - Vector2(BASE_SIZE.x / 2, BASE_SIZE.y)
-		draw_texture_rect(BASE_TEXTURES[player], Rect2(base_pos, BASE_SIZE), false)
 		
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
@@ -696,3 +703,31 @@ func add_cost(button: Button, cost: int) -> void:
 	label.text = "[img=18]%s[/img] %d" % [COIN_ICON_PATH, cost]
 	label.position = Vector2(52, 14)
 	button.add_child(label)
+
+func make_obstacles() -> void:
+	for i in Obstacles.TILES.size():
+		var art = OBSTACLE_ART[i % OBSTACLE_ART.size()]
+		var frame_size = art["texture"].get_height() # frames are squares
+		var sprite = Sprite2D.new()
+		sprite.texture = art["texture"]
+		sprite.hframes = art["texture"].get_width() / frame_size
+		sprite.scale = art["size"] / frame_size
+		sprite.position = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + art["shift"]
+		sprite.show_behind_parent = true # under the highlights and the units
+		add_child(sprite)
+		obstacle_sprites.append(sprite)
+
+func make_bases() -> void:
+	for player in BASE_POSITIONS:
+		var look = BASE_LOOK[player]
+		var sprite = Sprite2D.new()
+		sprite.texture = look["texture"]
+		sprite.hframes = look["frames"]
+		sprite.scale = Vector2.ONE * look["scale"]
+		sprite.centered = false # position = top-left corner of the picture
+		var size = Vector2(look["texture"].get_width() / look["frames"], look["texture"].get_height()) * look["scale"]
+		# stand on the bottom of the 2x2 block, "drop" skips the empty rows under the picture
+		sprite.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64 - size.x / 2, 128 - size.y + look["drop"])
+		sprite.show_behind_parent = true # under the highlights and the units
+		add_child(sprite)
+		base_sprites[player] = sprite

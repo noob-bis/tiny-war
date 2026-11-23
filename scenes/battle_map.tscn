@@ -5,9 +5,7 @@
 [ext_resource type="Script" uid="uid://fyx8lhryhvmx" path="res://scripts/battle_grid.gd" id="2_7eff0"]
 [ext_resource type="Texture2D" uid="uid://dn026gnjyn1a2" path="res://assets/Terrain/Decorations/Fence/Wooden Fence_64x64 tile.png" id="3_62sy1"]
 [ext_resource type="Script" uid="uid://ck4c1irgocv58" path="res://scripts/base_destroy.gd" id="3_jx2v5"]
-[ext_resource type="Texture2D" uid="uid://bcag3ak5dychb" path="res://assets/Terrain/Decorations/Rocks in the Water/Water Rocks_04.png" id="6_0xsog"]
 [ext_resource type="PackedScene" uid="uid://bgw83yeakmqgy" path="res://scenes/tree.tscn" id="6_jx2v5"]
-[ext_resource type="Texture2D" uid="uid://c51b6hbs00bke" path="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png" id="6_v42vf"]
 [ext_resource type="Script" uid="uid://duncda31sr452" path="res://scripts/mouse_input.gd" id="8_0xsog"]
 [ext_resource type="Script" uid="uid://raguym0b6mv3" path="res://scripts/player_economy.gd" id="9_jx2v5"]
 [ext_resource type="Script" uid="uid://b4bah1a1qhrfi" path="res://scripts/turn_counter.gd" id="10_qru5d"]
@@ -89,14 +87,6 @@ texture_region_size = Vector2i(64, 64)
 [sub_resource type="TileSet" id="TileSet_4lnce"]
 tile_size = Vector2i(64, 64)
 sources/0 = SubResource("TileSetAtlasSource_7jad5")
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_tdoib"]
-atlas = ExtResource("6_v42vf")
-region = Rect2(384, 0, 128, 128)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_jx2v5"]
-atlas = ExtResource("6_0xsog")
-region = Rect2(509.89594, 0, 67.20001, 64)
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_f8akh"]
 content_margin_bottom = 30.0
@@ -180,37 +170,6 @@ script = ExtResource("3_jx2v5")
 player_id = 2
 
 [node name="Decoration" type="Node2D" parent="." unique_id=838903480]
-
-[node name="Sheep" type="TextureRect" parent="Decoration" unique_id=1921179473]
-offset_left = 904.0
-offset_top = 485.0
-offset_right = 1032.0
-offset_bottom = 613.0
-texture = SubResource("AtlasTexture_tdoib")
-metadata/_edit_use_anchors_ = true
-
-[node name="Sheep2" type="TextureRect" parent="Decoration" unique_id=988729259]
-offset_left = 48.0
-offset_top = 161.0
-offset_right = 176.0
-offset_bottom = 289.0
-texture = SubResource("AtlasTexture_tdoib")
-metadata/_edit_use_anchors_ = true
-
-[node name="Sheep3" type="TextureRect" parent="Decoration" unique_id=1357148736]
-offset_left = 929.0
-offset_top = 294.0
-offset_right = 1057.0
-offset_bottom = 422.0
-texture = SubResource("AtlasTexture_tdoib")
-metadata/_edit_use_anchors_ = true
-
-[node name="WaterRock" type="TextureRect" parent="Decoration" unique_id=1221890349]
-offset_left = 1021.0
-offset_top = -95.0
-offset_right = 1088.0
-offset_bottom = -31.0
-texture = SubResource("AtlasTexture_jx2v5")
 
 [node name="Tree" parent="Decoration" unique_id=1335713111 instance=ExtResource("6_jx2v5")]
 position = Vector2(46, 341)
