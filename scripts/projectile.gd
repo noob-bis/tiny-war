@@ -4,7 +4,7 @@ extends Node2D
 signal hit
 
 # Projectile movement speed in pixels per second.
-const SPEED = 600.0
+var speed = 600.0
 
 # Hide the projectile when it is first created.
 func _ready() -> void:
@@ -26,7 +26,7 @@ func fire(from_pos: Vector2, to_pos: Vector2) -> void:
 
 	# Calculate the distance and time needed to reach the target.
 	var distance = from_pos.distance_to(to_pos)
-	var travel_time = distance / SPEED
+	var travel_time = distance / speed
 
 	# Create a tween to move the projectile smoothly.
 	var tween = create_tween()
