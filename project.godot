@@ -30,6 +30,8 @@ Obstacles="*uid://cmhq71yti7vc1"
 
 window/size/viewport_width=1280
 window/size/viewport_height=768
+window/size/window_width_override=1600
+window/size/window_height_override=960
 window/stretch/mode="canvas_items"
 
 [physics]

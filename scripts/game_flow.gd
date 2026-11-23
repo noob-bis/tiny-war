@@ -21,22 +21,51 @@ const FLASH_TIME_UNIT = 0.2
 const DONE_TINT = Color(0.5, 0.5, 0.5)
 const PROJECTILE_SCENE = preload("res://scenes/projectile.tscn")
 const ARROW_SCENE = preload("res://scenes/arrow.tscn")
-const BASE_TEXTURES = {
-	1: preload("res://assets/Buildings/Blue Buildings/Barracks.png"),
-	2: preload("res://assets/Buildings/Black Buildings/Barracks.png"),}
 const BUTTON_THEMES = {
 	1: preload("res://assets/ui_blue.tres"),
 	2: preload("res://assets/ui_red.tres"),}
-const ICON_REGIONS = {
-	"melee": Rect2(45, 90, 84, 84),
-	"ranged": Rect2(26, 46, 82, 92),
-	"tank": Rect2(38, 45, 70, 94),}
+const AVATARS = {
+	"1_melee": preload("res://assets/UI Elements/UI Elements/Human Avatars/Avatars_02.png"),
+	"1_ranged": preload("res://assets/UI Elements/UI Elements/Human Avatars/Avatars_03.png"),
+	"1_tank": preload("res://assets/UI Elements/UI Elements/Human Avatars/Avatars_01.png"),
+	"2_melee": preload("res://assets/Units/Red/Melee/Skull_Avatar.png"),
+	"2_ranged": preload("res://assets/Units/Red/Ranged/Harpoon Shark_Avatar.png"),
+	"2_tank": preload("res://assets/Units/Red/Tank/Minotaur_Avatar.png"),
+}
 const COIN_ICON_PATH = "res://assets/UI Elements/UI Elements/Icons/Icon_03.png"
 const INACTIVE_TINT = Color(0.6, 0.6, 0.6)
 const RIBBON_TEXTURES = {
 	1: preload("res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Blue.png"),
 	2: preload("res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Red.png"),}
-const BASE_SIZE = Vector2(128, 171)
+const UNIT_SCENE = preload("res://scenes/unit.tscn")
+const UNIT_FRAMES = {
+	"1_melee": preload("res://assets/Units/blue_melee_frames.tres"),
+	"2_melee": preload("res://assets/Units/red_melee_frames.tres"),
+	"1_ranged": preload("res://assets/Units/blue_ranged_frames.tres"),
+	"2_ranged": preload("res://assets/Units/red_ranged_frames.tres"),
+	"1_tank": preload("res://assets/Units/blue_tank_frames.tres"),
+	"2_tank": preload("res://assets/Units/red_tank_frames.tres"),}
+const UNIT_LOOK = {
+	"1_melee": {"scale": 0.68, "y": 28, "x": 0},
+	"1_ranged": {"scale": 0.88, "y": 21, "x": 0},
+	"1_tank": {"scale": 0.88, "y": 21, "x": 0},
+	"2_melee": {"scale": 1.0, "y": 20, "x": 0},
+	"2_ranged": {"scale": 0.88, "y": 19, "x": -12},
+	"2_tank": {"scale": 0.68, "y": 17, "x": -13},}
+const WALK_TIME = 0.18 # seconds per tile
+const HIT_POINT = 0.6 # the hit lands 60% into the attack animation
+const ARROW_SPEED = 600.0 # same as projectile.gd
+const DEATH_TIME = 0.5
+const FIREBALL_TIME = 0.4 # about how long the base fireball flies
+const AVATAR_CROP = Rect2(24, 24, 208, 208) # the avatars have empty space around the face
+const OBSTACLE_FRAME_MS = 150 # a new bush frame every 0.15 s
+
+const BASE_LOOK = {
+	1: {"texture": preload("res://assets/Buildings/Blue Buildings/Barracks.png"), "frames": 1, "scale": 0.667, "drop": 0},
+	2: {"texture": preload("res://assets/Buildings/Red Buildings/Goblin Hut.png"), "frames": 16, "scale": 0.9, "drop": 13},}
+const BASE_FRAME_MS = 100
+
+
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
 const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
 const BUSH = preload("res://assets/Terrain/Decorations/Bushes/Bushe3.png")
@@ -54,6 +83,10 @@ var base_bars: Dictionary = {}
 var game_over := false
 var message_timer: SceneTreeTimer
 var base_effects: Dictionary = {}
+var obstacle_sprites: Array = []
+var base_sprites: Dictionary = {}
+
+
 
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
@@ -70,10 +103,19 @@ var base_effects: Dictionary = {}
 
 # METHODS
 func _process(_delta: float) -> void:
+	for i in obstacle_sprites.size():
+		var sprite = obstacle_sprites[i]
+		sprite.frame = (Time.get_ticks_msec() / OBSTACLE_FRAME_MS + i * 3) % sprite.hframes
+
 	update_hud()
 	for unit in units:
 		update_bar(unit)
+		update_sprite(unit)
 	update_base_bars()
+	for player in base_sprites:
+		var base = base_sprites[player]
+		base.frame = (Time.get_ticks_msec() / BASE_FRAME_MS) % base.hframes
+
 
 func _ready() -> void:
 	z_index = 10
@@ -91,10 +133,13 @@ func _ready() -> void:
 	
 	var grid = get_parent().get_node("BattleGrid")
 	position = grid.position
-	
+	make_obstacles()
+	make_bases()
+
+
 	for button in picker.get_children():
 		button.pressed.connect(_on_pick.bind(String(button.name)))
-		button.text = "%s\n%d" % [String(button.name).capitalize(), UnitData.get_stats(String(button.name))["cost"]]
+		add_cost(button, UnitData.get_stats(String(button.name))["cost"])
 
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
 	
@@ -113,13 +158,7 @@ func _ready() -> void:
 	red_base.damage_state_changed.connect(_on_base_state_changed)
 
 func _draw() -> void:
-	for i in Obstacles.TILES.size():
-		var art = OBSTACLE_ART[i % OBSTACLE_ART.size()]
-		var center = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + art["shift"]
-		var target = Rect2(center - art["size"] / 2, art["size"])
-		var frame_size = art["texture"].get_height() # the first frame is a square
-		draw_texture_rect_region(art["texture"], target, Rect2(0, 0, frame_size, frame_size))
-
+		
 		
 	var marks = highlight_tiles()
 	for tile in marks:
@@ -129,23 +168,6 @@ func _draw() -> void:
 		else:
 			draw_rect(rect.grow(-2), marks[tile])
 
-
-	for player in BASE_POSITIONS:
-		var block_bottom_center = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64, 128)
-		var base_pos = block_bottom_center - Vector2(BASE_SIZE.x / 2, BASE_SIZE.y)
-		draw_texture_rect(BASE_TEXTURES[player], Rect2(base_pos, BASE_SIZE), false)
-
-
-	
-	for unit in units:
-		var texture = SKINS["%d_%s" % [unit["player"], unit["type"]]]
-		var tile_bottom_center = GridUtils.cell_to_pixel(unit["position"]) + Vector2(32, 64)
-		var size = Vector2(128, 128)
-		var pos = tile_bottom_center - Vector2(size.x / 2, size.y)
-		var tint = DONE_TINT if is_done(unit) else Color.WHITE
-		if unit.get("flash", false):
-			tint = Color(1, 0.3, 0.3)
-		draw_texture_rect(texture, Rect2(pos, size), false, tint)
 		
 	if selected_unit_index != -1:
 			var pos = GridUtils.cell_to_pixel(units[selected_unit_index]["position"])
@@ -188,6 +210,7 @@ func _on_place_unit(tile: Vector2i) -> void:
 			return
 		else:
 			var bar = HP_BAR_SCENE.instantiate()
+			bar.z_index = 1 # above the unit picture
 			add_child(bar)
 			units.append({
 				"player": current_player,
@@ -196,7 +219,8 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"hp": unit["hp"],
 				"acted": false,
 				"moved": false,
-				"bar": bar
+				"bar": bar,
+				"sprite": make_sprite(current_player, selected_deploy_type, tile),
 			})
 
 			queue_redraw() # to make the cicle appear
@@ -248,8 +272,8 @@ func _on_attack_unit(tile: Vector2i) -> void:
 				var enemy_base = blue_base if other_player == 1 else red_base
 				units[i]["acted"] = true
 				enemy_base.take_damage(UnitData.get_stats(units[i]["type"])["atk"])
-				if units[i]["type"] == "ranged":
-					shoot(units[i]["position"], tile)
+				strike(units[i], tile)
+
 				selected_unit_index = -1
 				queue_redraw()
 				return
@@ -266,14 +290,16 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					var damage = Damage.calculate_damage(attacker_type, units[i]["type"], attacker_stats["atk"])
 					units[attacker_index]["acted"] = true
 					units[i]["hp"] -= damage
-					flash_unit(units[i])
-					if attacker_type == "ranged":
-						shoot(units[attacker_index]["position"], tile)
+					var hit_time = strike(units[attacker_index], tile)
+					flash_unit(units[i], hit_time)
+
 
 					if units[i]["hp"] <= 0:
 						var bonus = player_economy.get_kill_bonus(units[i]["type"])
 						player_economy.add_coins(current_player, bonus)
 						units[i]["bar"].queue_free()
+						remove_later(units[i]["sprite"], hit_time)
+
 						units.erase(units[i])
 						print("Dealt damage, Unit removed")
 						selected_unit_index = -1
@@ -336,6 +362,8 @@ func _on_move_unit(tile: Vector2i) -> void:
 
 		mover["position"] = tile
 		mover["moved"] = true
+		walk(mover, path)
+
 
 		print("Move unit to ", tile)
 		selected_unit_index = -1
@@ -393,6 +421,7 @@ func apply_base_damage(player: int) -> void:
 				base_shoot(enemy, unit)
 			if unit["hp"] <= 0:
 				unit["bar"].queue_free()
+				remove_later(unit["sprite"], FIREBALL_TIME)
 				continue
 		survivors.append(unit)
 	units = survivors
@@ -421,10 +450,13 @@ func _on_turn_limit() -> void:
 
 func update_bar(unit: Dictionary) -> void:
 	var bar = unit["bar"]
-	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(4, -6)
+	# follow the picture, so the bar walks with the unit
+	var key = "%d_%s" % [unit["player"], unit["type"]]
+	bar.position = unit["sprite"].position + Vector2(-28, 50 - UNIT_LOOK[key]["y"])
 	var max_hp = UnitData.get_stats(unit["type"])["hp"]
 	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
 		bar.set_hp(unit["hp"], max_hp)
+	bar.visible = unit["hp"] < max_hp # full-health units show no bar
 
 func update_base_bars() -> void:
 	for player in base_bars:
@@ -505,13 +537,6 @@ func show_message(text: String) -> void:
 func _on_base_state_changed(player: int, state: String) -> void:
 	base_effects[player].set_base_state(state)
 
-func flash_unit(unit: Dictionary) -> void:
-	unit["flash"] = true
-	queue_redraw()
-	await get_tree().create_timer(FLASH_TIME_UNIT).timeout
-	unit["flash"] = false
-	queue_redraw()
-
 func is_done(unit: Dictionary) -> bool:
 	# grey when the unit has nothing left to do in this phase
 	if unit["player"] != TurnManager.current_player:
@@ -569,9 +594,140 @@ func update_buttons(player: int) -> void:
 	for button in picker.get_children():
 		var kind = String(button.name)
 		var icon = AtlasTexture.new()
-		icon.atlas = SKINS["%d_%s" % [player, kind]]
-		icon.region = ICON_REGIONS[kind]
+		icon.atlas = AVATARS["%d_%s" % [player, kind]]
+		icon.region = AVATAR_CROP
 		button.icon = icon
 
 	var ribbon = phase_hud.get_theme_stylebox("normal") as StyleBoxTexture
 	ribbon.texture = RIBBON_TEXTURES[player]
+
+func make_sprite(player: int, type: String, tile: Vector2i) -> AnimatedSprite2D:
+	var key = "%d_%s" % [player, type]
+	var sprite = UNIT_SCENE.instantiate()
+	sprite.sprite_frames = UNIT_FRAMES[key]
+	sprite.scale = Vector2.ONE * UNIT_LOOK[key]["scale"]
+	face(sprite, key, player == 2) # red units look left, toward the blue base
+	add_child(sprite)
+	sprite.position = sprite_position(player, type, tile)
+	sprite.play("idle")
+	sprite.frame = randi() % sprite.sprite_frames.get_frame_count("idle")
+	return sprite
+
+func sprite_position(player: int, type: String, tile: Vector2i) -> Vector2:
+	return GridUtils.cell_to_pixel(tile) + Vector2(32, UNIT_LOOK["%d_%s" % [player, type]]["y"])
+
+func update_sprite(unit: Dictionary) -> void:
+	# grey when done, red for a moment when hit
+	var tint = DONE_TINT if is_done(unit) else Color.WHITE
+	if unit.get("flash", false):
+		tint = Color(1, 0.3, 0.3)
+	unit["sprite"].modulate = tint
+
+func face(sprite: AnimatedSprite2D, key: String, left: bool) -> void:
+	sprite.flip_h = left
+	# the side shift must flip with the picture
+	sprite.offset.x = UNIT_LOOK[key]["x"] if left else -UNIT_LOOK[key]["x"]
+
+func walk(unit: Dictionary, path: Array) -> void:
+	# the rules already moved the unit, this only moves the picture tile by tile
+	var sprite = unit["sprite"]
+	var key = "%d_%s" % [unit["player"], unit["type"]]
+	var tween = sprite.create_tween() # stops by itself if the sprite is freed
+	sprite.play("run")
+	var last_x = sprite.position.x
+	for tile in path:
+		var target = sprite_position(unit["player"], unit["type"], tile)
+		if target.x != last_x:
+			tween.tween_callback(face.bind(sprite, key, target.x < last_x))
+			last_x = target.x
+		tween.tween_property(sprite, "position", target, WALK_TIME)
+	await tween.finished
+	face(sprite, key, unit["player"] == 2)
+	sprite.play("idle")
+
+func flash_unit(unit: Dictionary, delay := 0.0) -> void:
+	if delay > 0:
+		await get_tree().create_timer(delay).timeout # wait until the hit lands
+	unit["flash"] = true
+	queue_redraw()
+	await get_tree().create_timer(FLASH_TIME_UNIT).timeout
+	unit["flash"] = false
+	queue_redraw()
+
+func strike(attacker: Dictionary, target_tile: Vector2i) -> float:
+	# plays the attack toward the target and returns the seconds until the hit lands
+	var sprite = attacker["sprite"]
+	var key = "%d_%s" % [attacker["player"], attacker["type"]]
+	var target_x = sprite_position(attacker["player"], attacker["type"], target_tile).x
+	if target_x != sprite.position.x:
+		face(sprite, key, target_x < sprite.position.x)
+	sprite.play("attack")
+	sprite.animation_finished.connect(end_attack.bind(attacker), CONNECT_ONE_SHOT)
+
+	var frames = sprite.sprite_frames
+	var hit_time = frames.get_frame_count("attack") / frames.get_animation_speed("attack") * HIT_POINT
+	if attacker["type"] == "ranged":
+		# the arrow leaves at the hit point and still has to fly
+		get_tree().create_timer(hit_time).timeout.connect(shoot.bind(attacker["position"], target_tile))
+		var distance = (GridUtils.cell_to_pixel(target_tile) - GridUtils.cell_to_pixel(attacker["position"])).length()
+		hit_time += distance / ARROW_SPEED
+	return hit_time
+
+func end_attack(unit: Dictionary) -> void:
+	var key = "%d_%s" % [unit["player"], unit["type"]]
+	face(unit["sprite"], key, unit["player"] == 2)
+	unit["sprite"].play("idle")
+
+func remove_later(sprite: AnimatedSprite2D, delay: float) -> void:
+	# the rules removed the unit already, the picture waits for the hit
+	await get_tree().create_timer(delay).timeout
+	if not is_instance_valid(sprite):
+		return
+	sprite.stop() # freeze on the last frame
+	var tween = sprite.create_tween().set_parallel()
+	tween.tween_property(sprite, "modulate", Color(1, 0.3, 0.3, 0), DEATH_TIME) # turn red and fade out
+	tween.tween_property(sprite, "position:y", sprite.position.y + 10, DEATH_TIME) # sink a little
+	tween.chain().tween_callback(sprite.queue_free)
+
+func add_cost(button: Button, cost: int) -> void:
+	# coin picture + price on the right side of the button, the avatar is on the left
+	button.text = ""
+	var label = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.scroll_active = false
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE # clicks go to the button
+	label.add_theme_font_override("normal_font", button.get_theme_font("font"))
+	label.add_theme_font_size_override("normal_font_size", 18)
+	label.text = "[img=18]%s[/img] %d" % [COIN_ICON_PATH, cost]
+	label.position = Vector2(52, 14)
+	button.add_child(label)
+
+func make_obstacles() -> void:
+	for i in Obstacles.TILES.size():
+		var art = OBSTACLE_ART[i % OBSTACLE_ART.size()]
+		var frame_size = art["texture"].get_height() # frames are squares
+		var sprite = Sprite2D.new()
+		sprite.texture = art["texture"]
+		sprite.hframes = art["texture"].get_width() / frame_size
+		sprite.scale = art["size"] / frame_size
+		sprite.position = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + art["shift"]
+		sprite.show_behind_parent = true # under the highlights and the units
+		add_child(sprite)
+		obstacle_sprites.append(sprite)
+
+func make_bases() -> void:
+	for player in BASE_POSITIONS:
+		var look = BASE_LOOK[player]
+		var sprite = Sprite2D.new()
+		sprite.texture = look["texture"]
+		sprite.hframes = look["frames"]
+		sprite.scale = Vector2.ONE * look["scale"]
+		sprite.centered = false # position = top-left corner of the picture
+		var size = Vector2(look["texture"].get_width() / look["frames"], look["texture"].get_height()) * look["scale"]
+		# stand on the bottom of the 2x2 block, "drop" skips the empty rows under the picture
+		sprite.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64 - size.x / 2, 128 - size.y + look["drop"])
+		sprite.show_behind_parent = true # under the highlights and the units
+		add_child(sprite)
+		base_sprites[player] = sprite
