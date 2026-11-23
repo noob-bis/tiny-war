@@ -57,7 +57,7 @@ texture_margin_bottom = 16.0
 region_rect = Rect2(14, 28, 100, 85)
 
 [resource]
-Button/constants/icon_max_width = 44
+Button/constants/icon_max_width = 40
 Button/font_sizes/font_size = 20
 Button/fonts/font = ExtResource("1_06svf")
 Button/styles/disabled = SubResource("StyleBoxTexture_n5a2o")

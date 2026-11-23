@@ -27,10 +27,14 @@ const BASE_TEXTURES = {
 const BUTTON_THEMES = {
 	1: preload("res://assets/ui_blue.tres"),
 	2: preload("res://assets/ui_red.tres"),}
-const ICON_REGIONS = {
-	"melee": Rect2(45, 90, 84, 84),
-	"ranged": Rect2(26, 46, 82, 92),
-	"tank": Rect2(38, 45, 70, 94),}
+const AVATARS = {
+	"1_melee": preload("res://assets/UI Elements/UI Elements/Human Avatars/Avatars_02.png"),
+	"1_ranged": preload("res://assets/UI Elements/UI Elements/Human Avatars/Avatars_03.png"),
+	"1_tank": preload("res://assets/UI Elements/UI Elements/Human Avatars/Avatars_01.png"),
+	"2_melee": preload("res://assets/Units/Red/Melee/Skull_Avatar.png"),
+	"2_ranged": preload("res://assets/Units/Red/Ranged/Harpoon Shark_Avatar.png"),
+	"2_tank": preload("res://assets/Units/Red/Tank/Minotaur_Avatar.png"),
+}
 const COIN_ICON_PATH = "res://assets/UI Elements/UI Elements/Icons/Icon_03.png"
 const INACTIVE_TINT = Color(0.6, 0.6, 0.6)
 const RIBBON_TEXTURES = {
@@ -52,7 +56,11 @@ const UNIT_LOOK = {
 	"2_ranged": {"scale": 0.88, "y": 19, "x": -12},
 	"2_tank": {"scale": 0.68, "y": 17, "x": -13},}
 const WALK_TIME = 0.18 # seconds per tile
-
+const HIT_POINT = 0.6 # the hit lands 60% into the attack animation
+const ARROW_SPEED = 600.0 # same as projectile.gd
+const DEATH_TIME = 0.5
+const FIREBALL_TIME = 0.4 # about how long the base fireball flies
+const AVATAR_CROP = Rect2(24, 24, 208, 208) # the avatars have empty space around the face
 
 const BASE_SIZE = Vector2(128, 171)
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
@@ -113,7 +121,7 @@ func _ready() -> void:
 	
 	for button in picker.get_children():
 		button.pressed.connect(_on_pick.bind(String(button.name)))
-		button.text = "%s\n%d" % [String(button.name).capitalize(), UnitData.get_stats(String(button.name))["cost"]]
+		add_cost(button, UnitData.get_stats(String(button.name))["cost"])
 
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
 	
@@ -257,8 +265,8 @@ func _on_attack_unit(tile: Vector2i) -> void:
 				var enemy_base = blue_base if other_player == 1 else red_base
 				units[i]["acted"] = true
 				enemy_base.take_damage(UnitData.get_stats(units[i]["type"])["atk"])
-				if units[i]["type"] == "ranged":
-					shoot(units[i]["position"], tile)
+				strike(units[i], tile)
+
 				selected_unit_index = -1
 				queue_redraw()
 				return
@@ -275,15 +283,16 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					var damage = Damage.calculate_damage(attacker_type, units[i]["type"], attacker_stats["atk"])
 					units[attacker_index]["acted"] = true
 					units[i]["hp"] -= damage
-					flash_unit(units[i])
-					if attacker_type == "ranged":
-						shoot(units[attacker_index]["position"], tile)
+					var hit_time = strike(units[attacker_index], tile)
+					flash_unit(units[i], hit_time)
+
 
 					if units[i]["hp"] <= 0:
 						var bonus = player_economy.get_kill_bonus(units[i]["type"])
 						player_economy.add_coins(current_player, bonus)
 						units[i]["bar"].queue_free()
-						units[i]["sprite"].queue_free()
+						remove_later(units[i]["sprite"], hit_time)
+
 						units.erase(units[i])
 						print("Dealt damage, Unit removed")
 						selected_unit_index = -1
@@ -405,7 +414,7 @@ func apply_base_damage(player: int) -> void:
 				base_shoot(enemy, unit)
 			if unit["hp"] <= 0:
 				unit["bar"].queue_free()
-				unit["sprite"].queue_free()
+				remove_later(unit["sprite"], FIREBALL_TIME)
 				continue
 		survivors.append(unit)
 	units = survivors
@@ -441,7 +450,6 @@ func update_bar(unit: Dictionary) -> void:
 	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
 		bar.set_hp(unit["hp"], max_hp)
 	bar.visible = unit["hp"] < max_hp # full-health units show no bar
-
 
 func update_base_bars() -> void:
 	for player in base_bars:
@@ -522,13 +530,6 @@ func show_message(text: String) -> void:
 func _on_base_state_changed(player: int, state: String) -> void:
 	base_effects[player].set_base_state(state)
 
-func flash_unit(unit: Dictionary) -> void:
-	unit["flash"] = true
-	queue_redraw()
-	await get_tree().create_timer(FLASH_TIME_UNIT).timeout
-	unit["flash"] = false
-	queue_redraw()
-
 func is_done(unit: Dictionary) -> bool:
 	# grey when the unit has nothing left to do in this phase
 	if unit["player"] != TurnManager.current_player:
@@ -586,8 +587,8 @@ func update_buttons(player: int) -> void:
 	for button in picker.get_children():
 		var kind = String(button.name)
 		var icon = AtlasTexture.new()
-		icon.atlas = SKINS["%d_%s" % [player, kind]]
-		icon.region = ICON_REGIONS[kind]
+		icon.atlas = AVATARS["%d_%s" % [player, kind]]
+		icon.region = AVATAR_CROP
 		button.icon = icon
 
 	var ribbon = phase_hud.get_theme_stylebox("normal") as StyleBoxTexture
@@ -636,3 +637,62 @@ func walk(unit: Dictionary, path: Array) -> void:
 	await tween.finished
 	face(sprite, key, unit["player"] == 2)
 	sprite.play("idle")
+
+func flash_unit(unit: Dictionary, delay := 0.0) -> void:
+	if delay > 0:
+		await get_tree().create_timer(delay).timeout # wait until the hit lands
+	unit["flash"] = true
+	queue_redraw()
+	await get_tree().create_timer(FLASH_TIME_UNIT).timeout
+	unit["flash"] = false
+	queue_redraw()
+
+func strike(attacker: Dictionary, target_tile: Vector2i) -> float:
+	# plays the attack toward the target and returns the seconds until the hit lands
+	var sprite = attacker["sprite"]
+	var key = "%d_%s" % [attacker["player"], attacker["type"]]
+	var target_x = sprite_position(attacker["player"], attacker["type"], target_tile).x
+	if target_x != sprite.position.x:
+		face(sprite, key, target_x < sprite.position.x)
+	sprite.play("attack")
+	sprite.animation_finished.connect(end_attack.bind(attacker), CONNECT_ONE_SHOT)
+
+	var frames = sprite.sprite_frames
+	var hit_time = frames.get_frame_count("attack") / frames.get_animation_speed("attack") * HIT_POINT
+	if attacker["type"] == "ranged":
+		# the arrow leaves at the hit point and still has to fly
+		get_tree().create_timer(hit_time).timeout.connect(shoot.bind(attacker["position"], target_tile))
+		var distance = (GridUtils.cell_to_pixel(target_tile) - GridUtils.cell_to_pixel(attacker["position"])).length()
+		hit_time += distance / ARROW_SPEED
+	return hit_time
+
+func end_attack(unit: Dictionary) -> void:
+	var key = "%d_%s" % [unit["player"], unit["type"]]
+	face(unit["sprite"], key, unit["player"] == 2)
+	unit["sprite"].play("idle")
+
+func remove_later(sprite: AnimatedSprite2D, delay: float) -> void:
+	# the rules removed the unit already, the picture waits for the hit
+	await get_tree().create_timer(delay).timeout
+	if not is_instance_valid(sprite):
+		return
+	sprite.stop() # freeze on the last frame
+	var tween = sprite.create_tween().set_parallel()
+	tween.tween_property(sprite, "modulate", Color(1, 0.3, 0.3, 0), DEATH_TIME) # turn red and fade out
+	tween.tween_property(sprite, "position:y", sprite.position.y + 10, DEATH_TIME) # sink a little
+	tween.chain().tween_callback(sprite.queue_free)
+
+func add_cost(button: Button, cost: int) -> void:
+	# coin picture + price on the right side of the button, the avatar is on the left
+	button.text = ""
+	var label = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	label.scroll_active = false
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE # clicks go to the button
+	label.add_theme_font_override("normal_font", button.get_theme_font("font"))
+	label.add_theme_font_size_override("normal_font_size", 18)
+	label.text = "[img=18]%s[/img] %d" % [COIN_ICON_PATH, cost]
+	label.position = Vector2(52, 14)
+	button.add_child(label)
