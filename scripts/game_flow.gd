@@ -374,6 +374,7 @@ func apply_base_damage(player: int) -> void:
 		if unit["player"] == player:
 			if unit["position"] in base_deploy_tiles(enemy):
 				unit["hp"] -= BaseAttack.BASE_DAMAGE
+				base_shoot(enemy, unit)
 			if unit["hp"] <= 0:
 				unit["bar"].queue_free()
 				continue
@@ -507,6 +508,18 @@ func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
 	var from_pos = to_global(GridUtils.cell_to_pixel(from_tile) + center)
 	var to_pos = to_global(GridUtils.cell_to_pixel(to_tile) + center)
 	projectile.fire(from_pos, to_pos)
+
+func base_shoot(player: int, unit: Dictionary) -> void:
+	var projectile = PROJECTILE_SCENE.instantiate()
+	add_child(projectile)
+	projectile.z_index = 5
+	projectile.scale = Vector2(0.2, 0.2) # the fireball picture is 429 px wide
+	projectile.speed = 250.0 # the target is close, so fly slower
+	var from_pos = to_global(GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(64, 64))
+	var to_pos = to_global(GridUtils.cell_to_pixel(unit["position"]) + Vector2(32, 32))
+	projectile.fire(from_pos, to_pos)
+	await projectile.hit
+	flash_unit(unit)
 
 func base_tiles(player: int) -> Array:
 	# the base covers a 2x2 block, BASE_POSITIONS is its top-left tile
