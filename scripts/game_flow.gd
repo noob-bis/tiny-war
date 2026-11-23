@@ -24,6 +24,18 @@ const ARROW_SCENE = preload("res://scenes/arrow.tscn")
 const BASE_TEXTURES = {
 	1: preload("res://assets/Buildings/Blue Buildings/Barracks.png"),
 	2: preload("res://assets/Buildings/Black Buildings/Barracks.png"),}
+const BUTTON_THEMES = {
+	1: preload("res://assets/ui_blue.tres"),
+	2: preload("res://assets/ui_red.tres"),}
+const ICON_REGIONS = {
+	"melee": Rect2(45, 90, 84, 84),
+	"ranged": Rect2(26, 46, 82, 92),
+	"tank": Rect2(38, 45, 70, 94),}
+const COIN_ICON_PATH = "res://assets/UI Elements/UI Elements/Icons/Icon_03.png"
+const INACTIVE_TINT = Color(0.6, 0.6, 0.6)
+const RIBBON_TEXTURES = {
+	1: preload("res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Blue.png"),
+	2: preload("res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Red.png"),}
 const BASE_SIZE = Vector2(128, 171)
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
 const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
@@ -82,13 +94,14 @@ func _ready() -> void:
 	
 	for button in picker.get_children():
 		button.pressed.connect(_on_pick.bind(String(button.name)))
-		button.text = "%s\n%d" % [button.name, UnitData.get_stats(String(button.name))["cost"]]
-	_on_pick("melee")
+		button.text = "%s\n%d" % [String(button.name).capitalize(), UnitData.get_stats(String(button.name))["cost"]]
+
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
 	
 	for player in BASE_POSITIONS:
 		var base_bar = HP_BAR_SCENE.instantiate()
 		add_child(base_bar)
+		base_bar.bar_width = 80
 		base_bars[player] = base_bar
 		
 	for player in BASE_POSITIONS:
@@ -190,6 +203,8 @@ func _on_place_unit(tile: Vector2i) -> void:
 
 func _on_player_changed(player: int) -> void:
 	turn_counter.complete_turn()
+	if game_over: return
+
 	# each player's first turn uses only the starting bank (250)
 	if turn_counter.get_completed_turns() >= 2:
 		player_economy.give_passive_income(player, turn_counter.get_completed_turns() + 1)
@@ -327,6 +342,7 @@ func _on_move_unit(tile: Vector2i) -> void:
 		queue_redraw()
 
 func _on_phase_changed(player: int, phase: String) -> void:
+	update_buttons(player)
 	selected_unit_index = -1
 	queue_redraw()
 	
@@ -353,19 +369,19 @@ func count_total_units(player: int) -> int:
 
 func update_hud() -> void:
 	phase_hud.text = "%s" % [TurnManager.PHASES[TurnManager.current_phase_index]]
-	player1_hud.text = "Player 1\nCoin: %d\nBase HP: %d" % [player_economy.get_coins(1), blue_base.base_hp]
-	player2_hud.text = "Player 2\nCoin: %d\nBase HP: %d" % [player_economy.get_coins(2), red_base.base_hp]
-	
-	var p1_style = player1_hud.get_theme_stylebox("normal") as StyleBoxFlat
-	p1_style.border_color = Color.YELLOW if TurnManager.current_player == 1 else Color.WHITE
+	player1_hud.text = player_text(1, blue_base.base_hp)
+	player2_hud.text = player_text(2, red_base.base_hp)
+	# the player whose turn it is stays bright, the other one is darker
+	player1_hud.modulate = Color.WHITE if TurnManager.current_player == 1 else INACTIVE_TINT
+	player2_hud.modulate = Color.WHITE if TurnManager.current_player == 2 else INACTIVE_TINT
 
-	var p2_style = player2_hud.get_theme_stylebox("normal") as StyleBoxFlat
-	p2_style.border_color = Color.YELLOW if TurnManager.current_player == 2 else Color.WHITE
+func player_text(player: int, base_hp: int) -> String:
+	return "Player %d\n[img=24]%s[/img] %d\nBase HP: %d" % [player, COIN_ICON_PATH, player_economy.get_coins(player), base_hp]
 
 func _on_pick(kind: String) -> void:
 	selected_deploy_type = kind
 	for b in picker.get_children():
-		b.modulate = Color.YELLOW if b.name == kind else Color.WHITE
+		b.modulate = Color.WHITE if b.name == kind else Color(0.6, 0.6, 0.6)
 
 func apply_base_damage(player: int) -> void:
 	var enemy = 1 if player == 2 else 2
@@ -405,7 +421,7 @@ func _on_turn_limit() -> void:
 
 func update_bar(unit: Dictionary) -> void:
 	var bar = unit["bar"]
-	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(8, 0)
+	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(4, -6)
 	var max_hp = UnitData.get_stats(unit["type"])["hp"]
 	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
 		bar.set_hp(unit["hp"], max_hp)
@@ -414,7 +430,7 @@ func update_base_bars() -> void:
 	for player in base_bars:
 		var base = blue_base if player == 1 else red_base
 		var bar = base_bars[player]
-		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(40, -12)
+		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(24, -20)
 		if bar.current_hp != base.base_hp:
 			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
 
@@ -476,6 +492,9 @@ func attack_targets(unit: Dictionary) -> Array:
 
 func show_message(text: String) -> void:
 	message_label.text = text
+	message_label.reset_size() # shrink the box to fit the new text
+	message_label.position = (get_viewport_rect().size - message_label.size) / 2
+
 	message_label.visible = true
 	var timer = get_tree().create_timer(MESSAGE_TIME)
 	message_timer = timer
@@ -541,3 +560,18 @@ func base_in_range(from_tile: Vector2i, player: int, attack_range: int) -> bool:
 		if AttackRange.can_attack(from_tile, tile, attack_range):
 			return true
 	return false
+
+func update_buttons(player: int) -> void:
+	# buttons and pictures in the color of the player whose turn it is
+	end_turn_button.theme = BUTTON_THEMES[player]
+	picker.theme = BUTTON_THEMES[player]
+	
+	for button in picker.get_children():
+		var kind = String(button.name)
+		var icon = AtlasTexture.new()
+		icon.atlas = SKINS["%d_%s" % [player, kind]]
+		icon.region = ICON_REGIONS[kind]
+		button.icon = icon
+
+	var ribbon = phase_hud.get_theme_stylebox("normal") as StyleBoxTexture
+	ribbon.texture = RIBBON_TEXTURES[player]
