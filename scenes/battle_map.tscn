@@ -203,11 +203,14 @@ script = ExtResource("12_qru5d")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2023630667]
 
 [node name="EndturnButton" type="Button" parent="CanvasLayer" unique_id=1908158298]
-anchors_preset = -1
-offset_left = 616.0
-offset_top = 62.0
-offset_right = 722.0
-offset_bottom = 126.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -70.0
+offset_top = 56.0
+offset_right = 70.0
+offset_bottom = 106.0
+grow_horizontal = 2
 text = "End Turn"
 metadata/_edit_use_anchors_ = true
 
@@ -238,28 +241,45 @@ theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_jx2v5")
 
 [node name="Phase" type="Label" parent="CanvasLayer" unique_id=2094367743]
-offset_left = 563.0
-offset_right = 771.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -104.0
+offset_right = 104.0
 offset_bottom = 49.0
+grow_horizontal = 2
 theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBoxFlat_qru5d")
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Picker" type="HBoxContainer" parent="CanvasLayer" unique_id=1240740506]
-offset_left = 589.0
-offset_top = 698.0
-offset_right = 691.0
-offset_bottom = 764.0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -235.0
+offset_top = -66.0
+offset_right = 235.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 10
 
 [node name="melee" type="Button" parent="CanvasLayer/Picker" unique_id=1163362514]
+custom_minimum_size = Vector2(150, 66)
 layout_mode = 2
+expand_icon = true
 
 [node name="ranged" type="Button" parent="CanvasLayer/Picker" unique_id=415251813]
+custom_minimum_size = Vector2(150, 66)
 layout_mode = 2
+expand_icon = true
 
 [node name="tank" type="Button" parent="CanvasLayer/Picker" unique_id=1908089873]
+custom_minimum_size = Vector2(150, 66)
 layout_mode = 2
+expand_icon = true
 
 [node name="Message" type="Label" parent="CanvasLayer" unique_id=1726561107]
 visible = false

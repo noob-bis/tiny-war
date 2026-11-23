@@ -24,6 +24,13 @@ const ARROW_SCENE = preload("res://scenes/arrow.tscn")
 const BASE_TEXTURES = {
 	1: preload("res://assets/Buildings/Blue Buildings/Barracks.png"),
 	2: preload("res://assets/Buildings/Black Buildings/Barracks.png"),}
+const BUTTON_THEMES = {
+	1: preload("res://assets/ui_blue.tres"),
+	2: preload("res://assets/ui_red.tres"),}
+const ICON_REGIONS = {
+	"melee": Rect2(45, 90, 84, 84),
+	"ranged": Rect2(26, 46, 82, 92),
+	"tank": Rect2(38, 45, 70, 94),}
 const BASE_SIZE = Vector2(128, 171)
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
 const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
@@ -82,8 +89,8 @@ func _ready() -> void:
 	
 	for button in picker.get_children():
 		button.pressed.connect(_on_pick.bind(String(button.name)))
-		button.text = "%s\n%d" % [button.name, UnitData.get_stats(String(button.name))["cost"]]
-	_on_pick("melee")
+		button.text = "%s\n%d" % [String(button.name).capitalize(), UnitData.get_stats(String(button.name))["cost"]]
+
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
 	
 	for player in BASE_POSITIONS:
@@ -327,6 +334,7 @@ func _on_move_unit(tile: Vector2i) -> void:
 		queue_redraw()
 
 func _on_phase_changed(player: int, phase: String) -> void:
+	update_buttons(player)
 	selected_unit_index = -1
 	queue_redraw()
 	
@@ -365,7 +373,7 @@ func update_hud() -> void:
 func _on_pick(kind: String) -> void:
 	selected_deploy_type = kind
 	for b in picker.get_children():
-		b.modulate = Color.YELLOW if b.name == kind else Color.WHITE
+		b.modulate = Color.WHITE if b.name == kind else Color(0.6, 0.6, 0.6)
 
 func apply_base_damage(player: int) -> void:
 	var enemy = 1 if player == 2 else 2
@@ -541,3 +549,14 @@ func base_in_range(from_tile: Vector2i, player: int, attack_range: int) -> bool:
 		if AttackRange.can_attack(from_tile, tile, attack_range):
 			return true
 	return false
+
+func update_buttons(player: int) -> void:
+	# buttons and pictures in the color of the player whose turn it is
+	end_turn_button.theme = BUTTON_THEMES[player]
+	picker.theme = BUTTON_THEMES[player]
+	for button in picker.get_children():
+		var kind = String(button.name)
+		var icon = AtlasTexture.new()
+		icon.atlas = SKINS["%d_%s" % [player, kind]]
+		icon.region = ICON_REGIONS[kind]
+		button.icon = icon
