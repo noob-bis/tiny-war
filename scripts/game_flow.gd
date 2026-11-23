@@ -44,7 +44,6 @@ const UNIT_FRAMES = {
 	"2_ranged": preload("res://assets/Units/red_ranged_frames.tres"),
 	"1_tank": preload("res://assets/Units/blue_tank_frames.tres"),
 	"2_tank": preload("res://assets/Units/red_tank_frames.tres"),}
-
 const UNIT_LOOK = {
 	"1_melee": {"scale": 0.68, "y": 28, "x": 0},
 	"1_ranged": {"scale": 0.88, "y": 21, "x": 0},
@@ -52,6 +51,7 @@ const UNIT_LOOK = {
 	"2_melee": {"scale": 1.0, "y": 20, "x": 0},
 	"2_ranged": {"scale": 0.88, "y": 19, "x": -12},
 	"2_tank": {"scale": 0.68, "y": 17, "x": -13},}
+const WALK_TIME = 0.18 # seconds per tile
 
 
 const BASE_SIZE = Vector2(128, 171)
@@ -346,7 +346,7 @@ func _on_move_unit(tile: Vector2i) -> void:
 
 		mover["position"] = tile
 		mover["moved"] = true
-		mover["sprite"].position = sprite_position(mover["player"], mover["type"], tile)
+		walk(mover, path)
 
 
 		print("Move unit to ", tile)
@@ -434,7 +434,9 @@ func _on_turn_limit() -> void:
 
 func update_bar(unit: Dictionary) -> void:
 	var bar = unit["bar"]
-	bar.position = GridUtils.cell_to_pixel(unit["position"]) + Vector2(4, 50)
+	# follow the picture, so the bar walks with the unit
+	var key = "%d_%s" % [unit["player"], unit["type"]]
+	bar.position = unit["sprite"].position + Vector2(-28, 50 - UNIT_LOOK[key]["y"])
 	var max_hp = UnitData.get_stats(unit["type"])["hp"]
 	if bar.current_hp != unit["hp"] or bar.maximum_hp != max_hp:
 		bar.set_hp(unit["hp"], max_hp)
@@ -596,8 +598,7 @@ func make_sprite(player: int, type: String, tile: Vector2i) -> AnimatedSprite2D:
 	var sprite = UNIT_SCENE.instantiate()
 	sprite.sprite_frames = UNIT_FRAMES[key]
 	sprite.scale = Vector2.ONE * UNIT_LOOK[key]["scale"]
-	sprite.offset.x = UNIT_LOOK[key]["x"] # some monsters are not in the middle of their frame
-	sprite.flip_h = player == 2 # red units look left, toward the blue base
+	face(sprite, key, player == 2) # red units look left, toward the blue base
 	add_child(sprite)
 	sprite.position = sprite_position(player, type, tile)
 	sprite.play("idle")
@@ -613,3 +614,25 @@ func update_sprite(unit: Dictionary) -> void:
 	if unit.get("flash", false):
 		tint = Color(1, 0.3, 0.3)
 	unit["sprite"].modulate = tint
+
+func face(sprite: AnimatedSprite2D, key: String, left: bool) -> void:
+	sprite.flip_h = left
+	# the side shift must flip with the picture
+	sprite.offset.x = UNIT_LOOK[key]["x"] if left else -UNIT_LOOK[key]["x"]
+
+func walk(unit: Dictionary, path: Array) -> void:
+	# the rules already moved the unit, this only moves the picture tile by tile
+	var sprite = unit["sprite"]
+	var key = "%d_%s" % [unit["player"], unit["type"]]
+	var tween = sprite.create_tween() # stops by itself if the sprite is freed
+	sprite.play("run")
+	var last_x = sprite.position.x
+	for tile in path:
+		var target = sprite_position(unit["player"], unit["type"], tile)
+		if target.x != last_x:
+			tween.tween_callback(face.bind(sprite, key, target.x < last_x))
+			last_x = target.x
+		tween.tween_property(sprite, "position", target, WALK_TIME)
+	await tween.finished
+	face(sprite, key, unit["player"] == 2)
+	sprite.play("idle")
