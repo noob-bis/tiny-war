@@ -13,7 +13,6 @@ config_version=5
 config/name="Tiny-War"
 run/main_scene="uid://wmfnb0v84ovg"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
 
 [autoload]
 
@@ -32,7 +31,6 @@ Obstacles="*uid://cmhq71yti7vc1"
 window/size/viewport_width=1280
 window/size/viewport_height=768
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [physics]
 
