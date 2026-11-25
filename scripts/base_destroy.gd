@@ -10,9 +10,9 @@ signal base_destroyed(player_id: int)
 signal damage_state_changed(player_id: int, state: String)
 
 # Base HP and damage thresholds.
-const MAX_BASE_HP = 300
-const SMOKE_HP = 200
-const FIRE_HP = 100
+const MAX_BASE_HP = 60
+const SMOKE_HP = 40
+const FIRE_HP = 20
 
 # Identify which player owns this base.
 @export var player_id: int = 1

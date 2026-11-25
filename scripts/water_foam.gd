@@ -10,7 +10,7 @@ func _ready() -> void:
 		if is_edge(cell):
 			var foam = FOAM_SCENE.instantiate()
 			add_child(foam)
-			foam.position = ground.map_to_local(cell)
+			foam.position = ground.position + ground.map_to_local(cell)
 
 func is_edge(cell: Vector2i) -> bool:
 	for next in ground.get_surrounding_cells(cell):

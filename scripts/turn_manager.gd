@@ -5,7 +5,7 @@ signal phase_changed(player, phase)
 signal player_changed(player)
 
 # Five phases in order.
-const PHASES = ["Income", "Move", "Act", "Deploy", "End"]
+const PHASES = ["Income", "Command", "End"]
 
 # Current player and phase.
 var current_player = 1
@@ -42,7 +42,7 @@ func advance_phase():
 	if not match_started:
 		return
 
-	if current_phase_index == 4:
+	if current_phase_index == PHASES.size() - 1:
 		# Return to Income
 		current_phase_index = 0
 

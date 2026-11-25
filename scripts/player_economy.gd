@@ -1,13 +1,13 @@
 extends Node
 
 # Each player starts with 250 coins
-const STARTING_COINS = 250
+const STARTING_COINS = 200
 
 # Each player initially earns 150 coins per turn
-const PASSIVE_INCOME = 150
+const PASSIVE_INCOME = 60
 
 # Passive income increases by 25 coins every 5 turns
-const INCOME_INCREASE = 25
+const INCOME_INCREASE = 10
 const TURNS_PER_INCREASE = 5
 
 # Store each player's coins separately
@@ -136,6 +136,6 @@ func get_kill_bonus(unit_type: String) -> int:
 	var unit_cost: int = int(stats.get("cost", 0))
 
 	# Calculate 50% of the unit cost.
-	var bonus: int = int(unit_cost * 0.5)
+	var bonus: int = int(unit_cost * 0.25)
 
 	return bonus

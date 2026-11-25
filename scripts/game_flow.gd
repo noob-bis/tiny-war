@@ -65,6 +65,20 @@ const BASE_LOOK = {
 	2: {"texture": preload("res://assets/Buildings/Red Buildings/Goblin Hut.png"), "frames": 16, "scale": 0.9, "drop": 13},}
 const BASE_FRAME_MS = 100
 
+# TEST BRANCH: flag zone rules (Nov 23)
+const FLAG_TILES = [Vector2i(5, 3), Vector2i(6, 3), Vector2i(5, 4), Vector2i(6, 4)]
+const FLAG_COINS = 40
+const FLAG_DAMAGE = 15
+const SECOND_PLAYER_BONUS = 30
+const FLAG_TOWERS = {
+	0: preload("res://assets/Buildings/Yellow Buildings/Tower.png"),
+	1: preload("res://assets/Buildings/Blue Buildings/Tower.png"),
+	2: preload("res://assets/Buildings/Red Buildings/Tower.png"),}
+const FLAG_GROUND = preload("res://assets/Terrain/Tileset/Tilemap_color4.png")
+# FLAG_TILES order: top-left, top-right, bottom-left, bottom-right -> the matching corner pieces
+const FLAG_PATCH_PIECES = [Vector2(0, 0), Vector2(2, 0), Vector2(0, 2), Vector2(2, 2)]
+const FLAG_COLORS = {0: Color(1.0, 0.85, 0.2), 1: Color(0.3, 0.55, 1.0), 2: Color(1.0, 0.3, 0.3)}
+
 
 const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
 const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
@@ -85,6 +99,7 @@ var message_timer: SceneTreeTimer
 var base_effects: Dictionary = {}
 var obstacle_sprites: Array = []
 var base_sprites: Dictionary = {}
+var flag_tower: Sprite2D
 
 
 
@@ -123,6 +138,7 @@ func _ready() -> void:
 	mouse_input.place_unit.connect(_on_place_unit)
 	mouse_input.move_unit.connect(_on_move_unit)
 	mouse_input.attack_unit.connect(_on_attack_unit)
+	mouse_input.command.connect(_on_command)
 	
 	blue_base.base_destroyed.connect(_on_base_destroyed)
 	red_base.base_destroyed.connect(_on_base_destroyed)
@@ -135,6 +151,7 @@ func _ready() -> void:
 	position = grid.position
 	make_obstacles()
 	make_bases()
+	make_flag_tower()
 
 
 	for button in picker.get_children():
@@ -142,6 +159,10 @@ func _ready() -> void:
 		add_cost(button, UnitData.get_stats(String(button.name))["cost"])
 
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
+
+	# the second player starts with a few extra coins (the first player reaches the flag first)
+	var second_player = 1 if TurnManager.current_player == 2 else 2
+	player_economy.add_coins(second_player, SECOND_PLAYER_BONUS)
 	
 	for player in BASE_POSITIONS:
 		var base_bar = HP_BAR_SCENE.instantiate()
@@ -158,6 +179,7 @@ func _ready() -> void:
 	red_base.damage_state_changed.connect(_on_base_state_changed)
 
 func _draw() -> void:
+	draw_flag_zone()
 		
 		
 	var marks = highlight_tiles()
@@ -217,8 +239,8 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"type": selected_deploy_type,
 				"position": tile,
 				"hp": unit["hp"],
-				"acted": false,
-				"moved": false,
+				"acted": true, # a new unit waits until your next turn
+				"moved": true,
 				"bar": bar,
 				"sprite": make_sprite(current_player, selected_deploy_type, tile),
 			})
@@ -364,9 +386,9 @@ func _on_move_unit(tile: Vector2i) -> void:
 		mover["moved"] = true
 		walk(mover, path)
 
-
 		print("Move unit to ", tile)
-		selected_unit_index = -1
+		if TurnManager.get_current_phase() != "Command" or mover["acted"]:
+			selected_unit_index = -1
 		queue_redraw()
 
 func _on_phase_changed(player: int, phase: String) -> void:
@@ -379,14 +401,14 @@ func _on_phase_changed(player: int, phase: String) -> void:
 			if unit["player"] == player:
 				unit["acted"] = false
 				unit["moved"] = false
+		pay_flag(player)
 
 	if phase == "End":
 		apply_base_damage(player)
 	
 	if phase == "Income" or phase == "End":
 		TurnManager.advance_phase()
-	elif (phase == "Move" or phase == "Act") and count_total_units(player) == 0:
-		TurnManager.advance_phase()
+
 
 func count_total_units(player: int) -> int:
 	var count = 0
@@ -485,7 +507,21 @@ func highlight_tiles() -> Dictionary:
 		return result
 	var player = TurnManager.current_player
 	var phase = TurnManager.get_current_phase()
-	if phase == "Deploy":
+	if phase == "Command":
+		if selected_unit_index == -1:
+			var taken = occupied_tiles()
+			for tile in base_deploy_tiles(player):
+				if tile not in taken:
+					result[tile] = HIGHLIGHT_DEPLOY
+		else:
+			var unit = units[selected_unit_index]
+			if not unit["moved"]:
+				for tile in reachable_tiles(unit):
+					result[tile] = HIGHLIGHT_MOVE
+			if not unit["acted"]:
+				for tile in attack_targets(unit):
+					result[tile] = HIGHLIGHT_ATTACK
+	elif phase == "Deploy":
 		var taken = occupied_tiles()
 		for tile in base_deploy_tiles(player):
 			if tile not in taken:
@@ -542,6 +578,8 @@ func is_done(unit: Dictionary) -> bool:
 	if unit["player"] != TurnManager.current_player:
 		return false
 	var phase = TurnManager.get_current_phase()
+	if phase == "Command":
+		return unit["moved"] and unit["acted"]
 	return (phase == "Move" and unit["moved"]) or (phase == "Act" and unit["acted"])
 
 func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
@@ -731,3 +769,78 @@ func make_bases() -> void:
 		sprite.show_behind_parent = true # under the highlights and the units
 		add_child(sprite)
 		base_sprites[player] = sprite
+
+
+# ---------- TEST BRANCH: Command phase and flag zone (Nov 23) ----------
+
+func _on_command(tile: Vector2i) -> void:
+	# one click: select your unit, attack, move, or deploy
+	if game_over:
+		return
+	var player = TurnManager.current_player
+	for i in range(units.size()):
+		if units[i]["position"] == tile and units[i]["player"] == player:
+			selected_unit_index = i
+			queue_redraw()
+			return
+	if selected_unit_index != -1:
+		var unit = units[selected_unit_index]
+		if not unit["acted"] and tile in attack_targets(unit):
+			_on_attack_unit(tile)
+			return
+		if not unit["moved"] and tile in reachable_tiles(unit):
+			_on_move_unit(tile)
+			return
+		if tile in attack_targets(unit) or tile in reachable_tiles(unit):
+			show_message("This unit already acted")
+			return
+	if tile in base_deploy_tiles(player):
+		_on_place_unit(tile)
+		return
+	selected_unit_index = -1
+	queue_redraw()
+
+func flag_holder() -> int:
+	# 0 = nobody. Alone in the zone = yours. Both sides in it = nobody,
+	# unless only one side has a Tank there.
+	var inside = {1: false, 2: false}
+	var tank = {1: false, 2: false}
+	for unit in units:
+		if unit["position"] in FLAG_TILES:
+			inside[unit["player"]] = true
+			if unit["type"] == "tank":
+				tank[unit["player"]] = true
+	if inside[1] and not inside[2]:
+		return 1
+	if inside[2] and not inside[1]:
+		return 2
+	if inside[1] and inside[2] and tank[1] != tank[2]:
+		return 1 if tank[1] else 2
+	return 0
+
+func pay_flag(player: int) -> void:
+	# at the start of your turn: hold the flag = coins + damage to the enemy base
+	if game_over or flag_holder() != player:
+		return
+	player_economy.add_coins(player, FLAG_COINS)
+	var enemy_base = red_base if player == 1 else blue_base
+	enemy_base.take_damage(FLAG_DAMAGE)
+	show_message("Flag held: +%d coins, enemy base -%d" % [FLAG_COINS, FLAG_DAMAGE])
+
+func draw_flag_zone() -> void:
+	# a patch of dirt ground (the 4 corner pieces of the brown tileset) under the tower;
+	# the tower shows who holds the zone (yellow = nobody)
+	for i in FLAG_TILES.size():
+		var piece = FLAG_PATCH_PIECES[i] * 64
+		draw_texture_rect_region(FLAG_GROUND, Rect2(GridUtils.cell_to_pixel(FLAG_TILES[i]), Vector2(64, 64)), Rect2(piece, Vector2(64, 64)))
+	if flag_tower:
+		flag_tower.texture = FLAG_TOWERS[flag_holder()]
+
+func make_flag_tower() -> void:
+	# a small watchtower in the middle of the zone (64 x 128, half size)
+	flag_tower = Sprite2D.new()
+	flag_tower.texture = FLAG_TOWERS[0]
+	flag_tower.scale = Vector2(0.5, 0.5)
+	flag_tower.position = GridUtils.cell_to_pixel(FLAG_TILES[0]) + Vector2(64, 18) # stands on the middle of the 4 tiles
+	# drawn after the dirt patch; units are added later, so they stand in front of it
+	add_child(flag_tower)
