@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://c8504unov15k2" path="res://assets/Terrain/Resources/Wood/Trees/Tree2.png" id="2_ake3r"]
 [ext_resource type="Texture2D" uid="uid://dvarjdxct7e07" path="res://assets/Terrain/Resources/Wood/Trees/Tree3.png" id="3_18mvg"]
 [ext_resource type="Texture2D" uid="uid://phbk3i3w4xol" path="res://assets/Terrain/Resources/Wood/Trees/Tree4.png" id="4_dmmp0"]
-[ext_resource type="Script" uid="uid://fk6oemekrrl0" path="res://scenes/tree.gd" id="5_m26wl"]
+[ext_resource type="Script" uid="uid://fk6oemekrrl0" path="res://scripts/tree.gd" id="5_m26wl"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_vplca"]
 atlas = ExtResource("1_avsvi")

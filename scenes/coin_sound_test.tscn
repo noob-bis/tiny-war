@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bsvgmlonj2mh"]
 
-[ext_resource type="Script" uid="uid://b82fwbf664ctj" path="res://scenes/coin_sound_test.gd" id="1_umpmd"]
-[ext_resource type="AudioStream" uid="uid://qiwedoyfi1ry" path="res://assets/Audio/coin_gain.ogg.mp3" id="2_78oli"]
+[ext_resource type="Script" uid="uid://b82fwbf664ctj" path="res://scripts/coin_sound_test.gd" id="1_umpmd"]
+[ext_resource type="AudioStream" uid="uid://j2x6c657j2fn" path="res://assets/Audio/coin.mp3" id="2_78oli"]
 
 [node name="CoinSoundTest" type="Node2D" unique_id=1734710698]
 script = ExtResource("1_umpmd")

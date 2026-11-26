@@ -16,6 +16,7 @@
 [ext_resource type="Texture2D" uid="uid://cb52ckof8vywa" path="res://assets/Terrain/Decorations/Rocks/Rock4.png" id="14_hy13s"]
 [ext_resource type="Texture2D" uid="uid://3b4bfbu7y1hk" path="res://assets/Units/Blue/Archer/Archer_Run.png" id="15_5jr5q"]
 [ext_resource type="Texture2D" uid="uid://be3ehkqn8jxfi" path="res://assets/UI Elements/UI Elements/Swords/Swords.png" id="16_cj6f4"]
+[ext_resource type="AudioStream" uid="uid://58w0pyyv3cun" path="res://assets/Audio/main_menu.mp3" id="17_j7ex8"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7vrkn"]
 texture = ExtResource("2_qoj47")
@@ -1109,6 +1110,11 @@ theme_override_colors/font_outline_color = Color(0.78431374, 0.827451, 0.8588235
 theme_override_fonts/font = ExtResource("4_1sb1x")
 theme_override_font_sizes/font_size = 80
 text = "WAR"
+
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=1916726432]
+stream = ExtResource("17_j7ex8")
+volume_db = -10.677
+autoplay = true
 
 [connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/ExitButton" to="." method="_on_exit_button_pressed"]

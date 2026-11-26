@@ -52,7 +52,7 @@ const UNIT_LOOK = {
 	"2_melee": {"scale": 1.0, "y": 20, "x": 0},
 	"2_ranged": {"scale": 0.88, "y": 19, "x": -12},
 	"2_tank": {"scale": 0.68, "y": 17, "x": -13},}
-const WALK_TIME = 0.18 # seconds per tile
+const WALK_TIME = 0.4 # seconds per tile
 const HIT_POINT = 0.6 # the hit lands 60% into the attack animation
 const ARROW_SPEED = 600.0 # same as projectile.gd
 const DEATH_TIME = 0.5
@@ -85,6 +85,7 @@ var message_timer: SceneTreeTimer
 var base_effects: Dictionary = {}
 var obstacle_sprites: Array = []
 var base_sprites: Dictionary = {}
+var match_ready := false
 
 
 
@@ -100,6 +101,8 @@ var base_sprites: Dictionary = {}
 @onready var picker = $"../CanvasLayer/Picker"
 @onready var end_turn_button = $"../CanvasLayer/EndturnButton"
 @onready var message_label = $"../CanvasLayer/Message"
+@onready var music = $"../Music"
+
 
 # METHODS
 func _process(_delta: float) -> void:
@@ -156,6 +159,9 @@ func _ready() -> void:
 		base_effects[player] = effect
 	blue_base.damage_state_changed.connect(_on_base_state_changed)
 	red_base.damage_state_changed.connect(_on_base_state_changed)
+	
+	coin_flip()
+
 
 func _draw() -> void:
 		
@@ -222,10 +228,14 @@ func _on_place_unit(tile: Vector2i) -> void:
 				"bar": bar,
 				"sprite": make_sprite(current_player, selected_deploy_type, tile),
 			})
+			Sfx.play(["deploy", "deploy_2"].pick_random())
 
 			queue_redraw() # to make the cicle appear
 
 func _on_player_changed(player: int) -> void:
+	if not match_ready:
+		return # the coin flip starts the match, that is not a finished turn
+
 	turn_counter.complete_turn()
 	if game_over: return
 
@@ -272,7 +282,9 @@ func _on_attack_unit(tile: Vector2i) -> void:
 				var enemy_base = blue_base if other_player == 1 else red_base
 				units[i]["acted"] = true
 				enemy_base.take_damage(UnitData.get_stats(units[i]["type"])["atk"])
-				strike(units[i], tile)
+				var hit_time = strike(units[i], tile)
+				get_tree().create_timer(hit_time).timeout.connect(Sfx.play.bind("base_hit"))
+
 
 				selected_unit_index = -1
 				queue_redraw()
@@ -297,8 +309,9 @@ func _on_attack_unit(tile: Vector2i) -> void:
 					if units[i]["hp"] <= 0:
 						var bonus = player_economy.get_kill_bonus(units[i]["type"])
 						player_economy.add_coins(current_player, bonus)
+						Sfx.play("coin")
 						units[i]["bar"].queue_free()
-						remove_later(units[i]["sprite"], hit_time)
+						remove_later(units[i], hit_time)
 
 						units.erase(units[i])
 						print("Dealt damage, Unit removed")
@@ -407,6 +420,7 @@ func player_text(player: int, base_hp: int) -> String:
 	return "Player %d\n[img=24]%s[/img] %d\nBase HP: %d" % [player, COIN_ICON_PATH, player_economy.get_coins(player), base_hp]
 
 func _on_pick(kind: String) -> void:
+	Sfx.play("click")
 	selected_deploy_type = kind
 	for b in picker.get_children():
 		b.modulate = Color.WHITE if b.name == kind else Color(0.6, 0.6, 0.6)
@@ -421,7 +435,7 @@ func apply_base_damage(player: int) -> void:
 				base_shoot(enemy, unit)
 			if unit["hp"] <= 0:
 				unit["bar"].queue_free()
-				remove_later(unit["sprite"], FIREBALL_TIME)
+				remove_later(unit, FIREBALL_TIME)
 				continue
 		survivors.append(unit)
 	units = survivors
@@ -468,9 +482,16 @@ func update_base_bars() -> void:
 
 func end_turn() -> void:
 	if game_over : return
+	Sfx.play("click")
 	TurnManager.advance_phase()
 
 func finish_game(text: String) -> void:
+	if game_over:
+		return # already ended, don't play the end sound twice
+	game_over = true
+	music.stop()
+	Sfx.play("endgame")
+	
 	game_over = true
 	selected_unit_index = -1
 	winner_label.text = text
@@ -545,6 +566,7 @@ func is_done(unit: Dictionary) -> bool:
 	return (phase == "Move" and unit["moved"]) or (phase == "Act" and unit["acted"])
 
 func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
+	Sfx.play("arrow")
 	var projectile = ARROW_SCENE.instantiate()
 	add_child(projectile)
 	projectile.z_index = 5
@@ -554,6 +576,7 @@ func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
 	projectile.fire(from_pos, to_pos)
 
 func base_shoot(player: int, unit: Dictionary) -> void:
+	Sfx.play("fireball")
 	var projectile = PROJECTILE_SCENE.instantiate()
 	add_child(projectile)
 	projectile.z_index = 5
@@ -634,6 +657,12 @@ func walk(unit: Dictionary, path: Array) -> void:
 	var key = "%d_%s" % [unit["player"], unit["type"]]
 	var tween = sprite.create_tween() # stops by itself if the sprite is freed
 	sprite.play("run")
+	
+	var steps = Sfx.play("footsteps", -6.0)
+	if steps:
+		# stop the loop when the walk is done
+		get_tree().create_timer(WALK_TIME * path.size()).timeout.connect(steps.stop)
+	
 	var last_x = sprite.position.x
 	for tile in path:
 		var target = sprite_position(unit["player"], unit["type"], tile)
@@ -649,6 +678,8 @@ func flash_unit(unit: Dictionary, delay := 0.0) -> void:
 	if delay > 0:
 		await get_tree().create_timer(delay).timeout # wait until the hit lands
 	unit["flash"] = true
+	Sfx.play_first(["hit_" + unit["type"], "hit"])
+
 	queue_redraw()
 	await get_tree().create_timer(FLASH_TIME_UNIT).timeout
 	unit["flash"] = false
@@ -662,6 +693,7 @@ func strike(attacker: Dictionary, target_tile: Vector2i) -> float:
 	if target_x != sprite.position.x:
 		face(sprite, key, target_x < sprite.position.x)
 	sprite.play("attack")
+	if attacker["type"] != "ranged": Sfx.play("sword")
 	sprite.animation_finished.connect(end_attack.bind(attacker), CONNECT_ONE_SHOT)
 
 	var frames = sprite.sprite_frames
@@ -678,12 +710,15 @@ func end_attack(unit: Dictionary) -> void:
 	face(unit["sprite"], key, unit["player"] == 2)
 	unit["sprite"].play("idle")
 
-func remove_later(sprite: AnimatedSprite2D, delay: float) -> void:
-	# the rules removed the unit already, the picture waits for the hit
+func remove_later(unit: Dictionary, delay: float) -> void:
+
+	var sprite = unit["sprite"]
 	await get_tree().create_timer(delay).timeout
 	if not is_instance_valid(sprite):
 		return
-	sprite.stop() # freeze on the last frame
+	sprite.stop()
+	Sfx.play_first(["death_%d" % unit["player"], "death"])
+
 	var tween = sprite.create_tween().set_parallel()
 	tween.tween_property(sprite, "modulate", Color(1, 0.3, 0.3, 0), DEATH_TIME) # turn red and fade out
 	tween.tween_property(sprite, "position:y", sprite.position.y + 10, DEATH_TIME) # sink a little
@@ -731,3 +766,17 @@ func make_bases() -> void:
 		sprite.show_behind_parent = true # under the highlights and the units
 		add_child(sprite)
 		base_sprites[player] = sprite
+
+func coin_flip() -> void:
+	# the scroll in the middle shows the flip, then the first player
+	winner_label.text = "Flipping the coin..."
+	winner_label.visible = true
+	Sfx.play("coin")
+	await get_tree().create_timer(1.2).timeout
+	var first = randi_range(1, 2)
+	winner_label.text = "Player %d goes first!" % first
+	Sfx.play("coin")
+	await get_tree().create_timer(1.5).timeout
+	winner_label.visible = false
+	TurnManager.start_match(first)
+	match_ready = true
