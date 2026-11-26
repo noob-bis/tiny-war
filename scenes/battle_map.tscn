@@ -17,6 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://dmipyg5rvh517" path="res://assets/UI Elements/UI Elements/Human Avatars/Avatars_06.png" id="15_4lnce"]
 [ext_resource type="Texture2D" uid="uid://dj7t4fpc1cebn" path="res://assets/UI Elements/UI Elements/Ribbons/Ribbon_Blue.png" id="16_rxa8y"]
 [ext_resource type="Texture2D" uid="uid://tb8du0shtw7q" path="res://assets/UI Elements/UI Elements/Papers/SpecialPaper_Panel.png" id="18_4lnce"]
+[ext_resource type="AudioStream" uid="uid://cw48thy4osmvb" path="res://assets/Audio/fantasy_background.mp3" id="18_62sy1"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7eff0"]
 texture = ExtResource("1_ijbqd")
@@ -343,5 +344,10 @@ vertical_alignment = 1
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2102143485]
 position = Vector2(576, 248)
 zoom = Vector2(0.75, 0.75)
+
+[node name="Music" type="AudioStreamPlayer" parent="." unique_id=91146977]
+stream = ExtResource("18_62sy1")
+volume_db = -5.851
+autoplay = true
 
 [connection signal="pressed" from="CanvasLayer/EndturnButton" to="GameFlow" method="end_turn"]

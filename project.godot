@@ -25,6 +25,7 @@ MovementRange="*uid://cdfqa33uva32s"
 Damage="*uid://bgeb45qk8w8hl"
 BaseAttack="*uid://bbigw21b8gfq7"
 Obstacles="*uid://cmhq71yti7vc1"
+Sfx="*uid://cetam4hu6ej7f"
 
 [display]
 

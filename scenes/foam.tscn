@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bmmx0p2sjdqb5"]
 
 [ext_resource type="Texture2D" uid="uid://dubge5b14xsgm" path="res://assets/Terrain/Tileset/Water Foam.png" id="1_fvsui"]
-[ext_resource type="Script" uid="uid://fk6oemekrrl0" path="res://scenes/tree.gd" id="2_03sch"]
+[ext_resource type="Script" uid="uid://fk6oemekrrl0" path="res://scripts/tree.gd" id="2_03sch"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_rdunx"]
 atlas = ExtResource("1_fvsui")
