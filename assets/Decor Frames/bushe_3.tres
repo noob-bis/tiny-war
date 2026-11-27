@@ -1,0 +1,67 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://dadd0xoqbl6pb"]
+
+[ext_resource type="Texture2D" uid="uid://dsyhfeiwak0bu" path="res://assets/Terrain/Decorations/Bushes/Bushe3.png" id="1_8wgn8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rqs1r"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mke8f"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7uifr"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x8mnn"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_836we"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_elg67"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qvq1w"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wy7vv"]
+atlas = ExtResource("1_8wgn8")
+region = Rect2(896, 0, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rqs1r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mke8f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7uifr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x8mnn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_836we")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_elg67")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qvq1w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wy7vv")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 10.0
+}]

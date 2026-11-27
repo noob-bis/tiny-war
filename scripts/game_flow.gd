@@ -60,20 +60,32 @@ const FIREBALL_TIME = 0.4 # about how long the base fireball flies
 const AVATAR_CROP = Rect2(24, 24, 208, 208) # the avatars have empty space around the face
 const OBSTACLE_FRAME_MS = 150 # a new bush frame every 0.15 s
 
-const BASE_LOOK = {
-	1: {"texture": preload("res://assets/Buildings/Blue Buildings/Barracks.png"), "frames": 1, "scale": 0.667, "drop": 0},
-	2: {"texture": preload("res://assets/Buildings/Red Buildings/Goblin Hut.png"), "frames": 16, "scale": 0.9, "drop": 13},}
+# LOOKS (click GameFlow in battle_map, they are in the Inspector. Press F6 to see them.)
+# Which tiles are blocked and where the bases stand stays in code (Obstacles.TILES, BASE_POSITIONS).
+@export_group("Blue base")
+@export var blue_base_picture: Texture2D = preload("res://assets/Buildings/Blue Buildings/Barracks.png")
+@export var blue_base_frames = 1 # pictures side by side in the file
+@export var blue_base_scale = 0.667
+@export var blue_base_drop = 0 # pixels to move it down (skips empty rows at the bottom of the picture)
+@export_group("Red base")
+@export var red_base_picture: Texture2D = preload("res://assets/Buildings/Red Buildings/Goblin Hut.png")
+@export var red_base_frames = 16
+@export var red_base_scale = 0.9
+@export var red_base_drop = 13
 const BASE_FRAME_MS = 100
 
 
-const ROCK_BIG = preload("res://assets/Terrain/Decorations/Rocks/Rock4.png")
-const ROCK_SMALL = preload("res://assets/Terrain/Decorations/Rocks/Rock2.png")
-const BUSH = preload("res://assets/Terrain/Decorations/Bushes/Bushe3.png")
-const OBSTACLE_ART = [
-	{"texture": ROCK_BIG, "size": Vector2(80, 80), "shift": Vector2(0, 0)},
-	{"texture": BUSH, "size": Vector2(116, 116), "shift": Vector2(0, 8)},
-	{"texture": ROCK_SMALL, "size": Vector2(80, 80), "shift": Vector2(0, 0)},
-	{"texture": BUSH, "size": Vector2(116, 116), "shift": Vector2(0, 8)},]
+@export_group("Obstacles")
+# obstacle 1 gets the 1st picture, obstacle 2 the 2nd... and it starts again after the last one.
+# size and shift go with the picture at the same number (missing = 80x80, no shift)
+@export var obstacle_pictures: Array[Texture2D] = [
+	preload("res://assets/Terrain/Decorations/Rocks/Rock4.png"),
+	preload("res://assets/Terrain/Decorations/Bushes/Bushe3.png"),
+	preload("res://assets/Terrain/Decorations/Rocks/Rock2.png"),
+	preload("res://assets/Terrain/Decorations/Bushes/Bushe3.png"),]
+@export var obstacle_sizes: Array[Vector2] = [Vector2(80, 80), Vector2(116, 116), Vector2(80, 80), Vector2(116, 116)]
+@export var obstacle_shifts: Array[Vector2] = [Vector2(0, 0), Vector2(0, 8), Vector2(0, 0), Vector2(0, 8)]
+@export_group("")
 
 
 var selected_unit_index = -1
@@ -741,20 +753,25 @@ func add_cost(button: Button, cost: int) -> void:
 
 func make_obstacles() -> void:
 	for i in Obstacles.TILES.size():
-		var art = OBSTACLE_ART[i % OBSTACLE_ART.size()]
-		var frame_size = art["texture"].get_height() # frames are squares
+		var n = i % obstacle_pictures.size()
+		var texture = obstacle_pictures[n]
+		var size = obstacle_sizes[n] if n < obstacle_sizes.size() else Vector2(80, 80)
+		var shift = obstacle_shifts[n] if n < obstacle_shifts.size() else Vector2.ZERO
+		var frame_size = texture.get_height() # frames are squares
 		var sprite = Sprite2D.new()
-		sprite.texture = art["texture"]
-		sprite.hframes = art["texture"].get_width() / frame_size
-		sprite.scale = art["size"] / frame_size
-		sprite.position = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + art["shift"]
+		sprite.texture = texture
+		sprite.hframes = texture.get_width() / frame_size
+		sprite.scale = size / frame_size
+		sprite.position = GridUtils.cell_to_pixel(Obstacles.TILES[i]) + Vector2(32, 32) + shift
 		sprite.show_behind_parent = true # under the highlights and the units
 		add_child(sprite)
 		obstacle_sprites.append(sprite)
 
 func make_bases() -> void:
 	for player in BASE_POSITIONS:
-		var look = BASE_LOOK[player]
+		var look = {
+			1: {"texture": blue_base_picture, "frames": blue_base_frames, "scale": blue_base_scale, "drop": blue_base_drop},
+			2: {"texture": red_base_picture, "frames": red_base_frames, "scale": red_base_scale, "drop": red_base_drop},}[player]
 		var sprite = Sprite2D.new()
 		sprite.texture = look["texture"]
 		sprite.hframes = look["frames"]
