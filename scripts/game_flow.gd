@@ -52,6 +52,7 @@ const UNIT_LOOK = {
 	"2_melee": {"scale": 1.0, "y": 20, "x": 0},
 	"2_ranged": {"scale": 0.88, "y": 19, "x": -12},
 	"2_tank": {"scale": 0.68, "y": 17, "x": -13},}
+const DUST = preload("res://assets/Particle FX/Dust_01.png")
 const WALK_TIME = 0.4 # seconds per tile
 const HIT_POINT = 0.6 # the hit lands 60% into the attack animation
 const ARROW_SPEED = 600.0 # same as projectile.gd
@@ -60,7 +61,6 @@ const FIREBALL_TIME = 0.4 # about how long the base fireball flies
 const AVATAR_CROP = Rect2(24, 24, 208, 208) # the avatars have empty space around the face
 const OBSTACLE_FRAME_MS = 150 # a new bush frame every 0.15 s
 
-# LOOKS (click GameFlow in battle_map, they are in the Inspector. Press F6 to see them.)
 # Which tiles are blocked and where the bases stand stays in code (Obstacles.TILES, BASE_POSITIONS).
 @export_group("Blue base")
 @export var blue_base_picture: Texture2D = preload("res://assets/Buildings/Blue Buildings/Barracks.png")
@@ -442,8 +442,7 @@ func update_hud() -> void:
 	else:
 		var unit = units[selected_unit_index]
 		var stats = UnitData.get_stats(unit["type"])
-		unit_info.text = "%s  HP %d/%d\nATK %d  Move %d  Range %d" % [
-			unit["type"].capitalize(), unit["hp"], stats["hp"], stats["atk"], stats["move"], stats["range"]]
+		unit_info.text = "HP %d/%d" % [unit["hp"], stats["hp"]]
 		unit_info.reset_size() # fit the box to the text
 		var unit_pos = unit["sprite"].get_global_transform_with_canvas().origin # the unit on the screen
 		unit_info.position = unit_pos + Vector2(-unit_info.size.x / 2, -unit_info.size.y - 45)
@@ -767,6 +766,18 @@ func remove_later(unit: Dictionary, delay: float) -> void:
 		return
 	sprite.stop()
 	Sfx.play_first(["death_%d" % unit["player"], "death"])
+	# a puff of dust where the unit falls
+	var dust = Sprite2D.new()
+	dust.texture = DUST
+	dust.hframes = 8
+	dust.scale = Vector2(1.5, 1.5)
+	dust.position = sprite.position + Vector2(0, 10)
+	dust.z_index = 2 # in front of the unit picture
+	add_child(dust)
+	var puff = dust.create_tween()
+	puff.tween_property(dust, "frame", 7, DEATH_TIME) # play frames 0 to 7 over the fade
+	puff.tween_callback(dust.queue_free)
+
 
 	var tween = sprite.create_tween().set_parallel()
 	tween.tween_property(sprite, "modulate", Color(1, 0.3, 0.3, 0), DEATH_TIME) # turn red and fade out
