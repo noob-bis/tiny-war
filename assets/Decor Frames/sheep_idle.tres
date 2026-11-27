@@ -1,0 +1,53 @@
+[gd_resource type="SpriteFrames" format=3 uid="uid://ym42pdhyjdkv"]
+
+[ext_resource type="Texture2D" uid="uid://bryu1kg77yn32" path="res://assets/Terrain/Resources/Meat/Sheep/Sheep_Idle.png" id="1_ugay4"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5l174"]
+atlas = ExtResource("1_ugay4")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3gerh"]
+atlas = ExtResource("1_ugay4")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_we6ai"]
+atlas = ExtResource("1_ugay4")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mc3n1"]
+atlas = ExtResource("1_ugay4")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mah47"]
+atlas = ExtResource("1_ugay4")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kdkvj"]
+atlas = ExtResource("1_ugay4")
+region = Rect2(640, 0, 128, 128)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5l174")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3gerh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_we6ai")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mc3n1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mah47")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kdkvj")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 10.0
+}]
