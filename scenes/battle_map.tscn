@@ -2085,14 +2085,15 @@ script = ExtResource("12_qru5d")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=2023630667]
 
 [node name="EndturnButton" type="Button" parent="CanvasLayer" unique_id=1908158298]
-anchors_preset = 5
+anchors_preset = -1
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -70.0
-offset_top = 56.0
+offset_top = 160.0
 offset_right = 70.0
-offset_bottom = 106.0
+offset_bottom = 210.0
 grow_horizontal = 2
+offset_transform_position = Vector2(0, 160)
 text = "End Turn"
 metadata/_edit_use_anchors_ = true
 
@@ -2221,9 +2222,63 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_4lnce")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Label" type="Label" parent="CanvasLayer" unique_id=975479808]
-offset_right = 40.0
-offset_bottom = 23.0
+[node name="ButtonInfo" type="Label" parent="CanvasLayer" unique_id=497418706]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -640.0
+offset_top = -384.0
+offset_right = -583.0
+offset_bottom = -318.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_fonts/font = ExtResource("12_6nxkq")
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("StyleBoxTexture_4lnce")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="UnitInfo" type="Label" parent="CanvasLayer" unique_id=1309373146]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -66.0
+offset_right = 57.0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("12_6nxkq")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxTexture_4lnce")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TurnBanner" type="TextureRect" parent="CanvasLayer" unique_id=880453023]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -50.0
+offset_top = 56.0
+offset_right = 50.0
+offset_bottom = 154.0
+grow_horizontal = 2
+texture = ExtResource("13_f8akh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TurnLabel" type="Label" parent="CanvasLayer/TurnBanner" unique_id=698028164]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.23137255, 0.16470589, 0.101960786, 1)
+theme_override_fonts/font = ExtResource("12_6nxkq")
+theme_override_font_sizes/font_size = 17
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2102143485]
 position = Vector2(576, 248)

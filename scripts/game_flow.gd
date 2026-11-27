@@ -104,10 +104,13 @@ var match_ready := false
 @onready var mouse_input = $"../MouseInput"
 @onready var player_economy = $"../PlayerEconomy"
 @onready var turn_counter = $"../TurnCounter"
+@onready var turn_label = $"../CanvasLayer/TurnBanner/TurnLabel"
 @onready var blue_base = $"../BlueBase"
 @onready var red_base = $"../RedBase"
 @onready var player1_hud = $"../CanvasLayer/Player1HUD"
 @onready var player2_hud = $"../CanvasLayer/Player2HUD"
+@onready var unit_info = $"../CanvasLayer/UnitInfo"
+@onready var button_info = $"../CanvasLayer/ButtonInfo"
 @onready var phase_hud = $"../CanvasLayer/Phase"
 @onready var winner_label = $"../CanvasLayer/WinnerLabel"
 @onready var picker = $"../CanvasLayer/Picker"
@@ -155,6 +158,9 @@ func _ready() -> void:
 	for button in picker.get_children():
 		button.pressed.connect(_on_pick.bind(String(button.name)))
 		add_cost(button, UnitData.get_stats(String(button.name))["cost"])
+		button.mouse_entered.connect(show_button_info.bind(button))
+		button.mouse_exited.connect(hide_button_info)
+
 
 	turn_counter.turn_limit_reached.connect(_on_turn_limit)
 	
@@ -427,6 +433,24 @@ func update_hud() -> void:
 	# the player whose turn it is stays bright, the other one is darker
 	player1_hud.modulate = Color.WHITE if TurnManager.current_player == 1 else INACTIVE_TINT
 	player2_hud.modulate = Color.WHITE if TurnManager.current_player == 2 else INACTIVE_TINT
+	# turns left before the 40-turn limit (each player's turn counts as one)
+	turn_label.text = "Turns left\n%d" % (turn_counter.MAX_TURNS - turn_counter.get_completed_turns())
+
+	# stats of the clicked unit, shown above it (hidden when nothing is selected)
+	if selected_unit_index == -1:
+		unit_info.visible = false
+	else:
+		var unit = units[selected_unit_index]
+		var stats = UnitData.get_stats(unit["type"])
+		unit_info.text = "%s  HP %d/%d\nATK %d  Move %d  Range %d" % [
+			unit["type"].capitalize(), unit["hp"], stats["hp"], stats["atk"], stats["move"], stats["range"]]
+		unit_info.reset_size() # fit the box to the text
+		var unit_pos = unit["sprite"].get_global_transform_with_canvas().origin # the unit on the screen
+		unit_info.position = unit_pos + Vector2(-unit_info.size.x / 2, -unit_info.size.y - 45)
+		if unit_info.position.y < 0:
+			unit_info.position.y = unit_pos.y + 40 # top row: show it under the unit instead
+		unit_info.visible = true
+
 
 func player_text(player: int, base_hp: int) -> String:
 	return "Player %d\n[img=24]%s[/img] %d\nBase HP: %d" % [player, COIN_ICON_PATH, player_economy.get_coins(player), base_hp]
@@ -491,6 +515,19 @@ func update_base_bars() -> void:
 		bar.position = GridUtils.cell_to_pixel(BASE_POSITIONS[player]) + Vector2(24, -20)
 		if bar.current_hp != base.base_hp:
 			bar.set_hp(base.base_hp, base.MAX_BASE_HP)
+
+# The stats of a unit type, in a box above its button while the mouse is on it.
+func show_button_info(button: Button) -> void:
+	var stats = UnitData.get_stats(String(button.name))
+	button_info.text = "%s\nHP %d   ATK %d\nMove %d   Range %d" % [
+		String(button.name).capitalize(), stats["hp"], stats["atk"], stats["move"], stats["range"]]
+	button_info.reset_size() # fit the box to the text
+	# centred above the button, 8 px gap
+	button_info.position = button.global_position + Vector2((button.size.x - button_info.size.x) / 2, -button_info.size.y - 8)
+	button_info.visible = true
+
+func hide_button_info() -> void:
+	button_info.visible = false
 
 func end_turn() -> void:
 	if game_over : return
