@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://mj224xk8oyl"]
+
+[ext_resource type="Script" uid="uid://dqka7sru77bxe" path="res://scripts/projectile.gd" id="1_wbtou"]
+[ext_resource type="Texture2D" uid="uid://brhhoqoqgj74p" path="res://assets/Projectiles/Harpoon.png" id="2_wbtou"]
+
+[node name="Harpoon" type="Node2D" unique_id=523631305]
+script = ExtResource("1_wbtou")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=549650136]
+rotation = 0.7853982
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("2_wbtou")

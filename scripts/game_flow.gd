@@ -21,6 +21,8 @@ const FLASH_TIME_UNIT = 0.2
 const DONE_TINT = Color(0.5, 0.5, 0.5)
 const PROJECTILE_SCENE = preload("res://scenes/projectile.tscn")
 const ARROW_SCENE = preload("res://scenes/arrow.tscn")
+const HARPOON_SCENE = preload("res://scenes/harpoon.tscn")
+
 const BUTTON_THEMES = {
 	1: preload("res://assets/ui_blue.tres"),
 	2: preload("res://assets/ui_red.tres"),}
@@ -616,9 +618,12 @@ func is_done(unit: Dictionary) -> bool:
 	var phase = TurnManager.get_current_phase()
 	return (phase == "Move" and unit["moved"]) or (phase == "Act" and unit["acted"])
 
-func shoot(from_tile: Vector2i, to_tile: Vector2i) -> void:
+func shoot(from_tile: Vector2i, to_tile: Vector2i, player: int) -> void:
 	Sfx.play("arrow")
-	var projectile = ARROW_SCENE.instantiate()
+	
+	# humans shoot an arrow, the monster shark throws a harpoon
+	var projectile = (ARROW_SCENE if player == 1 else HARPOON_SCENE).instantiate()
+
 	add_child(projectile)
 	projectile.z_index = 5
 	var center = Vector2(32, 32)
@@ -750,6 +755,8 @@ func strike(attacker: Dictionary, target_tile: Vector2i) -> float:
 	var frames = sprite.sprite_frames
 	var hit_time = frames.get_frame_count("attack") / frames.get_animation_speed("attack") * HIT_POINT
 	if attacker["type"] == "ranged":
+		get_tree().create_timer(hit_time).timeout.connect(shoot.bind(attacker["position"], target_tile, attacker["player"]))
+
 		# the arrow leaves at the hit point and still has to fly
 		get_tree().create_timer(hit_time).timeout.connect(shoot.bind(attacker["position"], target_tile))
 		var distance = (GridUtils.cell_to_pixel(target_tile) - GridUtils.cell_to_pixel(attacker["position"])).length()
