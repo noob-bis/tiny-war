@@ -117,6 +117,7 @@ var match_ready := false
 @onready var end_turn_button = $"../CanvasLayer/EndturnButton"
 @onready var message_label = $"../CanvasLayer/Message"
 @onready var music = $"../Music"
+@onready var play_again_button = $"../CanvasLayer/WinnerLabel/PlayAgainButton"
 
 
 # METHODS
@@ -153,6 +154,8 @@ func _ready() -> void:
 	position = grid.position
 	make_obstacles()
 	make_bases()
+
+	play_again_button.pressed.connect(_on_play_again)
 
 
 	for button in picker.get_children():
@@ -540,10 +543,10 @@ func finish_game(text: String) -> void:
 	music.stop()
 	Sfx.play("endgame")
 	
-	game_over = true
 	selected_unit_index = -1
 	winner_label.text = text
 	winner_label.visible = true
+	play_again_button.visible = true
 	end_turn_button.disabled = true
 	queue_redraw()
 
@@ -845,3 +848,9 @@ func coin_flip() -> void:
 	winner_label.visible = false
 	TurnManager.start_match(first)
 	match_ready = true
+
+# Starts a new match on a fresh map (new coin flip, coins, bases, turns).
+func _on_play_again() -> void:
+	Sfx.play("click")
+	TurnManager.reset() # the autoload is not reloaded with the scene, so reset it by hand
+	get_tree().reload_current_scene()
