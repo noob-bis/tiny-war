@@ -65,6 +65,7 @@
 [ext_resource type="Texture2D" uid="uid://cdgngqmmpd8kp" path="res://assets/Terrain/Decorations/Clouds/Clouds_06.png" id="51_4ydj4"]
 [ext_resource type="Texture2D" uid="uid://b7cqshqnr5nu1" path="res://assets/Terrain/Decorations/Clouds/Clouds_07.png" id="52_eyw40"]
 [ext_resource type="Texture2D" uid="uid://dkscjcc2tb1ej" path="res://assets/Terrain/Decorations/Clouds/Clouds_08.png" id="53_6k7qr"]
+[ext_resource type="Theme" uid="uid://dg2eky8ug73o8" path="res://assets/ui_blue.tres" id="60_aqsf3"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7eff0"]
 texture = ExtResource("1_ijbqd")
@@ -2116,6 +2117,16 @@ theme_override_font_sizes/font_size = 40
 theme_override_styles/normal = SubResource("StyleBoxTexture_f8akh")
 horizontal_alignment = 1
 
+[node name="PlayAgainButton" type="Button" parent="CanvasLayer/WinnerLabel" unique_id=218463341]
+visible = false
+layout_mode = 0
+offset_left = 130.0
+offset_top = 120.0
+offset_right = 290.0
+offset_bottom = 170.0
+theme = ExtResource("60_aqsf3")
+text = "Play again"
+
 [node name="Player1HUD" type="RichTextLabel" parent="CanvasLayer" unique_id=1954102352]
 offset_left = 280.0
 offset_top = 7.0
@@ -2174,7 +2185,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Picker" type="HBoxContainer" parent="CanvasLayer" unique_id=1240740506]
-anchors_preset = 7
+anchors_preset = -1
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
@@ -2182,7 +2193,7 @@ anchor_bottom = 1.0
 offset_left = -235.0
 offset_top = -73.0
 offset_right = 235.0
-offset_bottom = -7.0
+offset_bottom = -17.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 10

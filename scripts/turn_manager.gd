@@ -63,3 +63,9 @@ func advance_phase():
 # Print the current player and phase.
 func print_status():
 	print("Player ", current_player, " - ", get_current_phase())
+
+# Back to the start, for a new match.
+func reset() -> void:
+	current_player = 1
+	current_phase_index = 0
+	match_started = false
