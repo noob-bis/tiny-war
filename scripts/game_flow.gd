@@ -755,10 +755,8 @@ func strike(attacker: Dictionary, target_tile: Vector2i) -> float:
 	var frames = sprite.sprite_frames
 	var hit_time = frames.get_frame_count("attack") / frames.get_animation_speed("attack") * HIT_POINT
 	if attacker["type"] == "ranged":
+		# the arrow (or harpoon) leaves at the hit point and still has to fly
 		get_tree().create_timer(hit_time).timeout.connect(shoot.bind(attacker["position"], target_tile, attacker["player"]))
-
-		# the arrow leaves at the hit point and still has to fly
-		get_tree().create_timer(hit_time).timeout.connect(shoot.bind(attacker["position"], target_tile))
 		var distance = (GridUtils.cell_to_pixel(target_tile) - GridUtils.cell_to_pixel(attacker["position"])).length()
 		hit_time += distance / ARROW_SPEED
 	return hit_time
