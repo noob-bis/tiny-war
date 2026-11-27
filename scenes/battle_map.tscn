@@ -57,6 +57,14 @@
 [ext_resource type="Texture2D" uid="uid://d01n5xrk7gukb" path="res://assets/Terrain/Decorations/Rocks/Rock2.png" id="29_0n10n"]
 [ext_resource type="Texture2D" uid="uid://cipglinncbpwt" path="res://assets/Terrain/Decorations/Rocks/Rock3.png" id="30_yh4ul"]
 [ext_resource type="Texture2D" uid="uid://cb52ckof8vywa" path="res://assets/Terrain/Decorations/Rocks/Rock4.png" id="31_mnwfi"]
+[ext_resource type="Texture2D" uid="uid://bt2j72rseokun" path="res://assets/Terrain/Decorations/Clouds/Clouds_01.png" id="46_548d6"]
+[ext_resource type="Texture2D" uid="uid://b22cn56p57egw" path="res://assets/Terrain/Decorations/Clouds/Clouds_02.png" id="47_aqsf3"]
+[ext_resource type="Texture2D" uid="uid://p006yi1kiajk" path="res://assets/Terrain/Decorations/Clouds/Clouds_03.png" id="48_7ldk2"]
+[ext_resource type="Texture2D" uid="uid://b7y73ukft382f" path="res://assets/Terrain/Decorations/Clouds/Clouds_04.png" id="49_j28t4"]
+[ext_resource type="Texture2D" uid="uid://bfshb0nvungc4" path="res://assets/Terrain/Decorations/Clouds/Clouds_05.png" id="50_mr46k"]
+[ext_resource type="Texture2D" uid="uid://cdgngqmmpd8kp" path="res://assets/Terrain/Decorations/Clouds/Clouds_06.png" id="51_4ydj4"]
+[ext_resource type="Texture2D" uid="uid://b7cqshqnr5nu1" path="res://assets/Terrain/Decorations/Clouds/Clouds_07.png" id="52_eyw40"]
+[ext_resource type="Texture2D" uid="uid://dkscjcc2tb1ej" path="res://assets/Terrain/Decorations/Clouds/Clouds_08.png" id="53_6k7qr"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7eff0"]
 texture = ExtResource("1_ijbqd")
@@ -2030,6 +2038,38 @@ position = Vector2(253, -48)
 animation = &"tree4"
 frame_progress = 0.0
 
+[node name="Cloud" type="Sprite2D" parent="Decoration" unique_id=340483253]
+position = Vector2(72, 681)
+texture = ExtResource("46_548d6")
+
+[node name="Cloud2" type="Sprite2D" parent="Decoration" unique_id=381704956]
+position = Vector2(312, 650)
+texture = ExtResource("47_aqsf3")
+
+[node name="Cloud3" type="Sprite2D" parent="Decoration" unique_id=328047427]
+position = Vector2(461, 695)
+texture = ExtResource("48_7ldk2")
+
+[node name="Cloud4" type="Sprite2D" parent="Decoration" unique_id=243742300]
+position = Vector2(580, 673)
+texture = ExtResource("49_j28t4")
+
+[node name="Cloud5" type="Sprite2D" parent="Decoration" unique_id=219479221]
+position = Vector2(72, 681)
+texture = ExtResource("50_mr46k")
+
+[node name="Cloud6" type="Sprite2D" parent="Decoration" unique_id=2013618390]
+position = Vector2(756, 672)
+texture = ExtResource("51_4ydj4")
+
+[node name="Cloud7" type="Sprite2D" parent="Decoration" unique_id=573896885]
+position = Vector2(951, 692)
+texture = ExtResource("52_eyw40")
+
+[node name="Cloud8" type="Sprite2D" parent="Decoration" unique_id=1275465399]
+position = Vector2(1020, 661)
+texture = ExtResource("53_6k7qr")
+
 [node name="MouseInput" type="Node2D" parent="." unique_id=855416727]
 script = ExtResource("8_0xsog")
 
@@ -2180,6 +2220,10 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleBoxTexture_4lnce")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Label" type="Label" parent="CanvasLayer" unique_id=975479808]
+offset_right = 40.0
+offset_bottom = 23.0
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2102143485]
 position = Vector2(576, 248)
